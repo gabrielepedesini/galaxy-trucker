@@ -1,0 +1,190 @@
+[
+  {
+    "type": "LOSTSTATION",
+    "level": 1,
+    "imgSrc": "card2-lv1.jpg",
+    "requiredCrew": 5,
+    "rewardBoxes": ["YELLOW", "GREEN"],
+    "penaltyDays": -1
+  },
+  {
+    "type": "LOSTSHIP",
+    "level": 1,
+    "imgSrc": "card3-lv1.jpg",
+    "penaltyCrew": 3,
+    "rewardCredits": 4,
+    "penaltyDays": -1
+  },
+  {
+    "type": "BATTLEZONE",
+    "level": 1,
+    "imgSrc": "card5-lv1.jpg",
+    "couples": [
+      {
+        "type": "CREWREQUIREMENT",
+        "penalty": {"type": "PENALTYDAYS", "neededAmount": -3, "shots": []}
+      },
+      {
+        "type": "ENGINEPOWERREQUIREMENT",
+        "penalty": {"type": "PENALTYCREW", "neededAmount": 2, "shots": []}
+      },
+      {
+        "type": "FIREPOWERREQUIREMENT",
+        "penalty": {"type": "PENALTYSHOTS", "neededAmount": 0, "shots":
+          [
+            {"size": "SMALL", "from": 2},
+            {"size": "BIG", "from": 2}
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "PLANETS",
+    "level": 1,
+    "imgSrc": "card8-lv1.jpg",
+    "penaltyDays": -2,
+    "rewardsForPlanets": [
+      ["RED", "RED"],
+      ["RED", "BLUE", "BLUE"],
+      ["YELLOW"]
+    ]
+  },
+  {
+    "type": "METEORSRAIN",
+    "level": 1,
+    "imgSrc": "card12-lv1.jpg",
+    "meteors": [
+        {"size": "BIG", "from": 0},
+        {"size": "SMALL", "from": 3},
+        {"size": "SMALL", "from": 1}
+      ]
+  },
+  {
+    "type": "OPENSPACE",
+    "level": 1,
+    "imgSrc": "card16-lv1.jpg"
+  },
+  {
+    "type": "STARDUST",
+    "level": 1,
+    "imgSrc": "card17-lv1.jpg"
+  },
+  {
+    "type": "SMUGGLERS",
+    "level": 1,
+    "imgSrc": "card19-lv1.jpg",
+    "firePowerRequired": 4,
+    "penaltyBoxes": 2,
+    "penaltyDays": -1,
+    "rewardBoxes": ["YELLOW", "GREEN", "BLUE"]
+  },
+  {
+    "type": "LOSTSTATION",
+    "level": 1,
+    "imgSrc": "card1-lv1.jpg",
+    "requiredCrew": 6,
+    "rewardBoxes": ["RED", "RED"],
+    "penaltyDays": -1
+  },
+  {
+    "type": "LOSTSHIP",
+    "level": 1,
+    "imgSrc": "card4-lv1.jpg",
+    "penaltyCrew": 2,
+    "rewardCredits": 3,
+    "penaltyDays": -1
+  },
+  {
+    "type": "PLANETS",
+    "level": 1,
+    "imgSrc": "card6-lv1.jpg",
+    "penaltyDays": -1,
+    "rewardsForPlanets": [
+      ["GREEN", "GREEN"],
+      ["YELLOW"],
+      ["BLUE", "BLUE", "BLUE"]
+    ]
+  },
+  {
+    "type": "PLANETS",
+    "level": 1,
+    "imgSrc": "card7-lv1.jpg",
+    "penaltyDays": -3,
+    "rewardsForPlanets": [
+      ["YELLOW", "GREEN", "BLUE", "BLUE"],
+      ["YELLOW", "YELLOW"]
+    ]
+  },
+  {
+    "type": "PLANETS",
+    "level": 1,
+    "imgSrc": "card9-lv1.jpg",
+    "penaltyDays": -3,
+    "rewardsForPlanets": [
+      ["RED", "GREEN", "BLUE", "BLUE", "BLUE"],
+      ["RED", "YELLOW", "BLUE"],
+      ["RED", "BLUE", "BLUE", "BLUE"],
+      ["RED", "GREEN"]
+    ]
+  },
+  {
+    "type": "METEORSRAIN",
+    "level": 1,
+    "imgSrc": "card10-lv1.jpg",
+    "meteors": [
+        {"size": "BIG", "from": 0},
+        {"size": "SMALL", "from": 0},
+        {"size": "BIG", "from": 0}
+      ]
+  },
+  {
+    "type": "METEORSRAIN",
+    "level": 1,
+    "imgSrc": "card11-lv1.jpg",
+    "meteors": [
+      {"size": "SMALL", "from": 0},
+      {"size": "SMALL", "from": 0},
+      {"size": "SMALL", "from": 1},
+      {"size": "SMALL", "from": 2},
+      {"size": "SMALL", "from": 3}
+    ]
+  },
+  {
+    "type": "OPENSPACE",
+    "level": 1,
+    "imgSrc": "card13-lv1.jpg"
+  },
+  {
+    "type": "OPENSPACE",
+    "level": 1,
+    "imgSrc": "card14-lv1.jpg"
+  },
+  {
+    "type": "OPENSPACE",
+    "level": 1,
+    "imgSrc": "card15-lv1.jpg"
+  },
+  {
+    "type": "PIRATES",
+    "level": 1,
+    "imgSrc": "card18-lv1.jpg",
+    "firePowerRequired": 5,
+    "penaltyDays": -1,
+    "rewardCredits": 4,
+    "shots": [
+        {"size": "SMALL", "from": 0},
+        {"size": "BIG", "from": 0},
+        {"size": "SMALL", "from": 0}
+      ]
+  },
+  {
+    "type": "SLAVERS",
+    "level": 1,
+    "imgSrc": "card20-lv1.jpg",
+    "firePowerRequired": 6,
+    "penaltyCrew": 3,
+    "penaltyDays": -1,
+    "rewardCredits": 5
+  }
+]

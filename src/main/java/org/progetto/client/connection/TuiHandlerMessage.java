@@ -1,0 +1,949 @@
+package org.progetto.client.connection;
+
+import org.progetto.client.model.BuildingData;
+import org.progetto.client.model.GameData;
+import org.progetto.client.tui.*;
+import org.progetto.messages.toClient.*;
+import org.progetto.messages.toClient.Battlezone.AnotherPlayerGotPenalizedMessage;
+import org.progetto.messages.toClient.Battlezone.EvaluatingConditionMessage;
+import org.progetto.messages.toClient.Building.*;
+import org.progetto.messages.toClient.Epidemic.AnotherPlayerCrewInfectedMessage;
+import org.progetto.messages.toClient.Epidemic.CrewInfectedAmountMessage;
+import org.progetto.messages.toClient.EventGeneric.*;
+import org.progetto.messages.toClient.LostStation.AcceptRewardCreditsAndPenaltiesMessage;
+import org.progetto.messages.toClient.OpenSpace.AnotherPlayerMovedAheadMessage;
+import org.progetto.messages.toClient.OpenSpace.PlayerMovedAheadMessage;
+import org.progetto.messages.toClient.Planets.AnotherPlayerLandedPlanetMessage;
+import org.progetto.messages.toClient.Planets.AvailablePlanetsMessage;
+import org.progetto.messages.toClient.Populating.AlienPlacedMessage;
+import org.progetto.messages.toClient.Populating.AskAlienMessage;
+import org.progetto.messages.toClient.Positioning.AskStartingPositionMessage;
+import org.progetto.messages.toClient.Positioning.PlayersInPositioningDecisionOrderMessage;
+import org.progetto.messages.toClient.Positioning.StartingPositionsMessage;
+import org.progetto.messages.toClient.Smugglers.AcceptRewardBoxesAndPenaltyDaysMessage;
+import org.progetto.messages.toClient.Spaceship.ResponseSpaceshipMessage;
+import org.progetto.messages.toClient.Spaceship.ResponseSpaceshipStatsMessage;
+import org.progetto.messages.toClient.Spaceship.UpdateOtherTravelersShipMessage;
+import org.progetto.messages.toClient.Spaceship.UpdateSpaceshipMessage;
+import org.progetto.messages.toClient.Stardust.ExposedConnectorsMessage;
+import org.progetto.messages.toClient.Track.ResponseTrackMessage;
+import org.progetto.messages.toClient.Track.UpdateTrackMessage;
+import org.progetto.messages.toClient.Travel.PlayerIsContinuingMessage;
+import org.progetto.messages.toClient.Travel.PlayerLeftMessage;
+import org.progetto.server.model.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class TuiHandlerMessage {
+
+    // =======================
+    // COLORS
+    // =======================
+
+    private static final String RESET = "\u001B[0m";
+    private static final String RED = "\u001B[31m";
+    private static final String PURPLE = "\u001B[35m";
+    private static final String ORANGE = "\u001B[38;5;208m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String BLUE = "\u001B[34m";
+
+    // =======================
+    // OTHER METHODS
+    // =======================
+
+    /**
+     * Method that handles the messages coming from the server updating the TUI
+     *
+     * @param messageObj the message that has arrived
+     */
+    public static void handleMessage(Object messageObj) {
+        if (messageObj instanceof WaitingGamesMessage waitingGamesMessage) {
+            TuiPrinters.printWaitingGames(waitingGamesMessage.getWaitingGames());
+        }
+
+        else if (messageObj instanceof GameInfoMessage initGameMessage) {
+            System.out.println("You joined a game:");
+            System.out.printf ("│ ID: %d %n", initGameMessage.getIdGame());
+            System.out.printf ("│ Level: %d %n", initGameMessage.getLevelGame());
+
+            GameData.setIdGame(initGameMessage.getIdGame());
+            GameData.setLevelGame(initGameMessage.getLevelGame());
+        }
+
+        else if (messageObj instanceof ReconnectionGameData reconnectionGameData) {
+            Sender sender = GameData.getSender();
+
+            int levelGame = reconnectionGameData.getLevelGame();
+            String gamePhase = reconnectionGameData.getGamePhase();
+            int playerColor = reconnectionGameData.getPlayerColor();
+
+            GameData.setActivePlayer(reconnectionGameData.getNameActivePlayer());
+
+            GameData.setLevelGame(levelGame);
+            GameData.setPhaseGame(gamePhase);
+            GameData.setColor(playerColor);
+
+            switch (gamePhase) {
+                case "BUILDING":
+                    sender.showHandComponent();
+                    sender.showBookedComponents();
+                    sender.showSpaceship(GameData.getNamePlayer());
+                    sender.showPlayers();
+                    sender.showVisibleComponents();
+                    break;
+
+                case "ADJUSTING":
+                    sender.showSpaceship(GameData.getNamePlayer());
+                    break;
+
+                case "POPULATING":
+                    break;
+
+                case "POSITIONING":
+                    sender.showPlayersInPositioningDecisionOrder();
+                    sender.showStartingPositions();
+                    break;
+
+                case "EVENT":
+                    sender.showSpaceship(GameData.getNamePlayer());
+                    break;
+            }
+            System.out.println("You reconnected to the game, welcome back!");
+            System.out.println("You are in " + gamePhase + " phase");
+        }
+
+        else if (messageObj instanceof WaitingPlayersMessage waitingPlayersMessage) {
+
+        }
+
+        else if (messageObj instanceof NewGamePhaseMessage newGamePhaseMessage) {
+            System.out.println();
+            System.out.println(newGamePhaseMessage.getPhaseGame() + " phase started...");
+            GameData.setPhaseGame(newGamePhaseMessage.getPhaseGame());
+            switch (newGamePhaseMessage.getPhaseGame()) {
+                case "WAITING":
+                    System.out.println("Waiting players...");
+                    break;
+
+                case "INIT":
+                    System.out.println("Write ready when you are ready to play");
+                    break;
+
+                case "BUILDING":
+                    System.out.println("Write ready when you have finished to build your ship");
+                    break;
+
+                case "ADJUSTING":
+                    System.out.println("Fix your ship deleting miss placed components");
+                    break;
+
+                case "POPULATING":
+
+                    break;
+
+                case "POSITIONING":
+
+                    break;
+
+                case "TRAVEL":
+
+                    break;
+
+                case "EVENT":
+
+                    break;
+
+                case "ENDGAME":
+
+                    break;
+            }
+        }
+
+        else if (messageObj instanceof PlayerColorMessage playerColorMessage) {
+            GameData.setColor(playerColorMessage.getColor());
+        }
+
+        else if (messageObj instanceof ResponseSpaceshipMessage responseSpaceshipMessage) {
+            TuiPrinters.printSpaceship(responseSpaceshipMessage.getOwner().getName(), responseSpaceshipMessage.getSpaceship(), responseSpaceshipMessage.getOwner().getColor());
+        }
+
+        else if (messageObj instanceof ResponseSpaceshipStatsMessage responseSpaceshipStatsMessage) {
+            TuiPrinters.printSpaceshipStats(responseSpaceshipStatsMessage.getSpaceship());
+        }
+
+        else if( messageObj instanceof UpdateSpaceshipMessage updateSpaceshipMessage ) {
+            // TuiPrinters.printSpaceship(updateSpaceshipMessage.getOwner().getName(),updateSpaceshipMessage.getSpaceship(),updateSpaceshipMessage.getOwner().getColor());
+        }
+
+        else if(messageObj instanceof UpdateTrackMessage updateTrackMessage ) {
+            // TuiPrinters.printTrack(updateTrackMessage.getPlayersInTrack(), updateTrackMessage.getTrack());
+        }
+
+        else if (messageObj instanceof UpdateOtherTravelersShipMessage updateOtherTravelersShipMessage) {
+            // TuiPrinters.printPlayers(updatePlayersMessage.getPlayers());
+        }
+
+        else if(messageObj instanceof PlayerIsContinuingMessage playerIsContinuingMessage) {
+            System.out.println(playerIsContinuingMessage.getPlayerName() + " is continuing...");
+        }
+
+        else if (messageObj instanceof ResponsePlayerStatsMessage playerStatsMessage) {
+            TuiPrinters.printPlayerStats(playerStatsMessage.getPlayerName(), playerStatsMessage.getCredits(), playerStatsMessage.getPosition(), playerStatsMessage.getHasLeft());
+        }
+
+        else if (messageObj instanceof ResponseTrackMessage trackMessage) {
+            TuiPrinters.printTrack(trackMessage.getTravelers(), trackMessage.getTrack());
+        }
+
+        else if (messageObj instanceof ShowHandComponentMessage showHandComponentMessage) {
+            System.out.println("Current hand component:");
+            TuiPrinters.printComponent(showHandComponentMessage.getHandComponent());
+        }
+
+        else if (messageObj instanceof PickedComponentMessage pickedComponentMessage) {
+            System.out.println("New component picked:");
+            TuiPrinters.printComponent(pickedComponentMessage.getPickedComponent());
+        }
+
+        else if (messageObj instanceof AnotherPlayerDiscardComponentMessage anotherPlayerDiscardComponentMessage) {
+            System.out.println(anotherPlayerDiscardComponentMessage.getNamePlayer() + " discarded a component");
+        }
+
+        else if (messageObj instanceof AnotherPlayerPlacedComponentMessage anotherPlayerPlacedComponentMessage) {
+
+        }
+
+        else if (messageObj instanceof AnotherPlayerPickedVisibleComponentMessage anotherPlayerPickedVisibleComponentMessage) {
+            System.out.println(anotherPlayerPickedVisibleComponentMessage.getPlayerName() + " picked " + anotherPlayerPickedVisibleComponentMessage.getPickedComponent() + "from visible component");
+        }
+
+        else if (messageObj instanceof ShowVisibleComponentsMessage pickedVisibleComponentsMessage) {
+            TuiPrinters.printVisibleComponents(pickedVisibleComponentsMessage.getVisibleComponentDeck());
+        }
+
+        else if (messageObj instanceof ShowBookedComponentsMessage pickedBookedComponentsMessage) {
+            TuiPrinters.printBookedComponents(pickedBookedComponentsMessage.getBookedComponents());
+        }
+
+        else if (messageObj instanceof PickedUpEventCardDeckMessage pickedUpEventCardDeckMessage) {
+            TuiPrinters.printEventCardDeck(pickedUpEventCardDeckMessage.getEventCardsDeck());
+        }
+
+        else if (messageObj instanceof AnotherPlayerPickedUpEventCardDeck anotherPlayerPickedUpEventCardDeck) {
+            System.out.println(anotherPlayerPickedUpEventCardDeck.getNamePlayer() + " picked up event card deck " + anotherPlayerPickedUpEventCardDeck.getDeckIdx());
+        }
+
+        else if (messageObj instanceof AnotherPlayerPutDownEventCardDeckMessage anotherPlayerPutDownEventCardDeckMessage) {
+            System.out.println(anotherPlayerPutDownEventCardDeckMessage.getNamePlayer() + " put down event card deck " + anotherPlayerPutDownEventCardDeckMessage.getDeckIdx());
+        }
+
+        else if(messageObj instanceof AnotherPlayerBookedComponentMessage anotherPlayerBookedComponentMessage){
+            System.out.println(anotherPlayerBookedComponentMessage.getPlayerName() + " booked a component at " + anotherPlayerBookedComponentMessage.getIdx());
+        }
+
+        else if(messageObj instanceof AnotherPlayerPickedBookedComponentMessage anotherPlayerPickedBookedComponentMessage){
+            System.out.println(anotherPlayerPickedBookedComponentMessage.getPlayerName() + " picked a booked component at " + anotherPlayerPickedBookedComponentMessage.getIdx());
+        }
+
+        else if (messageObj instanceof TimerMessage timerMessage) {
+            int timer = timerMessage.getTime();
+
+            if (timer == 10)
+                System.out.println(ORANGE + "10 seconds remaining..." + RESET);
+            else if (timer == 0)
+                System.out.println(ORANGE + "Timer is finished" + RESET);
+        }
+
+        else if (messageObj instanceof AnotherPlayerIsReadyMessage anotherPlayerIsReadyMessage) {
+            System.out.println(anotherPlayerIsReadyMessage.getNamePlayer() + " is ready");
+            System.out.println();
+        }
+
+        else if (messageObj instanceof PickedEventCardMessage pickedEventCardMessage) {
+            System.out.println("Card picked: " + pickedEventCardMessage.getEventCard().getType());
+            TuiPrinters.printEventCard(pickedEventCardMessage.getEventCard());
+        }
+
+        else if(messageObj instanceof AskAlienMessage askAlien) {
+            BuildingCommands.responsePlaceAlien(askAlien.getColor(), askAlien.getSpaceship());
+        }
+
+        else if(messageObj instanceof AlienPlacedMessage alienPlacedMessage) {
+            System.out.println("Alien successfully placed at:");
+            System.out.printf ("│ X: %d %n", alienPlacedMessage.getX());
+            System.out.printf ("│ Y: %d %n", alienPlacedMessage.getY());
+            System.out.println();
+        }
+
+        else if(messageObj instanceof PlayersInPositioningDecisionOrderMessage playersInPositioningDecisionOrderMessage) {
+            List<String> playersNames = new ArrayList<>();
+            for (Player player: playersInPositioningDecisionOrderMessage.getPlayers()){
+                playersNames.add(player.getName());
+            }
+            System.out.println("Players in decision order: " + playersNames);
+        }
+
+        else if(messageObj instanceof ActivePlayerMessage activePlayerMessage) {
+            if(activePlayerMessage.getPlayerName().equals(GameData.getNamePlayer()))
+                System.out.println("You are the active player");
+            else
+                System.out.println("It's " + activePlayerMessage.getPlayerName() + "'s turn");
+        }
+
+        else if(messageObj instanceof AskStartingPositionMessage askStartingPositionMessage) {
+            BuildingCommands.responseStartingPosition(askStartingPositionMessage.getStartingPositions());
+        }
+
+        else if (messageObj instanceof StartingPositionsMessage startingPositionsMessage) {
+            Player[] players = startingPositionsMessage.getStartingPositions();
+
+            boolean allChosen = true;
+            for (Player p : players) {
+                if (p == null) {
+                    allChosen = false;
+                    break;
+                }
+            }
+
+            if (allChosen) {
+                System.out.println("Starting positions are:");
+                for (int i = 0; i < players.length; i++) {
+                    String slotContent = (players[i] == null) ? "EMPTY" : players[i].getName();
+                    System.out.println("[" + (i + 1) + "] Slot: " + slotContent);
+                }
+            }
+        }
+
+        else if(messageObj instanceof HowManyDoubleCannonsMessage howManyDoubleCannonsMessage) {
+            EventCommands.responseHowManyDoubleCannons(
+                    howManyDoubleCannonsMessage.getFirePowerRequired(),
+                    howManyDoubleCannonsMessage.getMaxUsable(),
+                    howManyDoubleCannonsMessage.getShootingPower()
+                    );
+        }
+
+        else if(messageObj instanceof HowManyDoubleEnginesMessage howManyDoubleEnginesMessage) {
+            EventCommands.responseHowManyDoubleEngines(howManyDoubleEnginesMessage.getMaxUsable(), howManyDoubleEnginesMessage.getEnginePower());
+        }
+
+        else if(messageObj instanceof BatteriesToDiscardMessage batteriesToDiscardMessage) {
+            EventCommands.responseBatteryToDiscard(batteriesToDiscardMessage.getBatteriesToDiscard());
+        }
+
+        else if (messageObj instanceof BatteryDiscardedMessage batteryDiscardedMessage) {
+            System.out.println("Battery discarded successfully");
+        }
+
+        else if (messageObj instanceof AnotherPlayerBatteryDiscardedMessage anotherPlayerBatteryDiscardedMessage) {
+        }
+
+        else if (messageObj instanceof CrewDiscardedMessage crewDiscardedMessage) {
+            System.out.println("Crew member discarded successfully");
+        }
+
+        else if (messageObj instanceof AnotherPlayerCrewDiscardedMessage anotherPlayerCrewDiscardedMessage) {
+        }
+
+        else if (messageObj instanceof BoxDiscardedMessage boxDiscardedMessage) {
+            System.out.println("Box discarded successfully");
+        }
+
+        else if (messageObj instanceof AnotherPlayerBoxDiscardedMessage anotherPlayerBoxDiscardedMessage) {
+        }
+
+        else if(messageObj instanceof CrewToDiscardMessage crewToDiscardMessage) {
+            EventCommands.responseCrewToDiscard(crewToDiscardMessage.getCrewToDiscard());
+        }
+
+        else if(messageObj instanceof BoxToDiscardMessage boxToDiscardMessage) {
+            EventCommands.responseBoxToDiscard(boxToDiscardMessage.getBoxToDiscard());
+        }
+
+        else if(messageObj instanceof AcceptRewardCreditsAndPenaltiesMessage acceptRewardCreditsAndPenaltiesMessage) {
+            EventCommands.responseAcceptRewardCreditsAndPenalties(
+                    acceptRewardCreditsAndPenaltiesMessage.getRewardCredits(),
+                    acceptRewardCreditsAndPenaltiesMessage.getPenaltyDays(),
+                    acceptRewardCreditsAndPenaltiesMessage.getPenaltyCrew()
+            );
+        }
+
+        else if(messageObj instanceof AcceptRewardCreditsAndPenaltyDaysMessage acceptRewardCreditsAndPenaltyDaysMessage) {
+            EventCommands.responseAcceptRewardCreditsAndPenaltyDays(
+                    acceptRewardCreditsAndPenaltyDaysMessage.getRewardCredits(),
+                    acceptRewardCreditsAndPenaltyDaysMessage.getPenaltyDays()
+            );
+        }
+
+        else if(messageObj instanceof AcceptRewardBoxesAndPenaltyDaysMessage acceptRewardBoxesAndPenaltyDaysMessage) {
+            EventCommands.responseAcceptRewardBoxesAndPenaltyDays(
+                    acceptRewardBoxesAndPenaltyDaysMessage.getRewardBoxes(),
+                    acceptRewardBoxesAndPenaltyDaysMessage.getPenaltyDays()
+            );
+        }
+
+        else if(messageObj instanceof AvailablePlanetsMessage availablePlanetsMessage) {
+            EventCommands.responsePlanetLandRequest(availablePlanetsMessage.getRewardsForPlanets(), availablePlanetsMessage.getPlanetsTaken());
+        }
+
+        else if(messageObj instanceof AvailableBoxesMessage availableBoxesMessage) {
+            EventCommands.responseRewardBox(availableBoxesMessage.getBoxes());
+        }
+
+        else if (messageObj instanceof AnotherPlayerLandedPlanetMessage anotherPlayerLandedPlanetMessage){
+            String name = anotherPlayerLandedPlanetMessage.getPlayer().getName();
+            int idxPlanet = anotherPlayerLandedPlanetMessage.getPlanetIdx();
+
+            System.out.println(name + " landed on planet " + (idxPlanet + 1));
+        }
+
+        else if (messageObj instanceof AnotherPlayerLandedMessage anotherPlayerLandedMessage){
+            String name = anotherPlayerLandedMessage.getPlayer().getName();
+
+            System.out.println(name + "landed");
+        }
+
+        else if(messageObj instanceof PlayerMovedAheadMessage playerMovedAheadMessage) {
+            System.out.println(GREEN + "You have moved ahead of " + playerMovedAheadMessage.getStepsCount() + " positions" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerMovedAheadMessage anotherPlayerMovedAheadMessage) {
+            System.out.println(GREEN + anotherPlayerMovedAheadMessage.getNamePlayer() + " has moved ahead of " + anotherPlayerMovedAheadMessage.getStepsCount() + " positions" + RESET);
+        }
+
+        else if(messageObj instanceof PlayerMovedBackwardMessage playerMovedBackwardMessage) {
+            System.out.println(BLUE + "You have moved backward of " + playerMovedBackwardMessage.getStepsCount() + " positions" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerMovedBackwardMessage anotherPlayerMovedBackwardMessage) {
+            System.out.println(BLUE + anotherPlayerMovedBackwardMessage.getNamePlayer() + " has moved backward of " + anotherPlayerMovedBackwardMessage.getStepsCount() + " positions" + RESET);
+        }
+
+        else if(messageObj instanceof PlayerGetsCreditsMessage playerGetsCreditsMessage) {
+            System.out.println(YELLOW + "You received " + playerGetsCreditsMessage.getCredits() + " credits" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerGetsCreditsMessage anotherPlayerGetsCreditsMessage) {
+            System.out.println(YELLOW + anotherPlayerGetsCreditsMessage.getNamePlayer() + " received " + anotherPlayerGetsCreditsMessage.getCredits() + " credits" + RESET);
+        }
+
+        else if(messageObj instanceof IncomingProjectileMessage incomingProjectileMessage) {
+            System.out.println();
+            TuiPrinters.printIncomingProjectile(incomingProjectileMessage);
+        }
+
+        else if(messageObj instanceof DiceResultMessage diceResultMessage) {
+            System.out.println("Dice result: " +  diceResultMessage.getDiceResult());
+        }
+
+        else if(messageObj instanceof AnotherPlayerDiceResultMessage anotherPlayerDiceResultMessage) {
+            System.out.println("Dice result: " +  anotherPlayerDiceResultMessage.getDiceResult());
+        }
+
+        else if (messageObj instanceof EvaluatingConditionMessage evaluatingConditionMessage) {
+            String condition = switch (evaluatingConditionMessage.getCondition()) {
+                case "Crew" -> "less crew members";
+                case "Engine" -> "fewer engine power";
+                case "Cannon" -> "fewer shooting power";
+                default -> "";
+            };
+            System.out.println(PURPLE + "Finding player with " + condition + RESET);
+        }
+
+        else if (messageObj instanceof AnotherPlayerGotPenalizedMessage anotherPlayerGotPenalizedMessage) {
+            System.out.println(RED + anotherPlayerGotPenalizedMessage.getPlayerName() + " got penalized for this condition" + RESET);
+        }
+
+        else if (messageObj instanceof AffectedComponentMessage affectedComponentMessage) {
+            System.out.println("Incoming projectile has affected component positioned:");
+            System.out.printf ("│ X: %d %n", affectedComponentMessage.getXComponent());
+            System.out.printf ("│ Y: %d %n", affectedComponentMessage.getYComponent());
+        }
+
+        else if (messageObj instanceof DestroyedComponentMessage destroyedComponentMessage){
+            TuiPrinters.printDestroyedComponent(null, destroyedComponentMessage.getxComponent(), destroyedComponentMessage.getyComponent());
+        }
+
+        else if(messageObj instanceof AnotherPlayerDestroyedComponentMessage anotherPlayerDestroyedComponentMessage){
+            TuiPrinters.printDestroyedComponent(
+                    anotherPlayerDestroyedComponentMessage.getNamePlayer(),
+                    anotherPlayerDestroyedComponentMessage.getxComponent(),
+                    anotherPlayerDestroyedComponentMessage.getyComponent()
+            );
+        }
+
+        else if (messageObj instanceof ExposedConnectorsMessage exposedConnectorsMessage) {
+            int exposedConnectorsCount = exposedConnectorsMessage.getExposedConnectorsCount();
+
+            if (exposedConnectorsCount == 0) {
+                System.out.println(GREEN + "You have no exposed connectors, your ship is well built" + RESET);
+            } else {
+                System.out.println(RED + "You have " + exposedConnectorsCount + " exposed connectors, so you will move back by the same number of positions" + RESET);
+            }
+        }
+
+        else if(messageObj instanceof PlayerLeftMessage playerLeftMessage) {
+            System.out.println(PURPLE + playerLeftMessage.getPlayerName() + " left travel" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerWonBattleMessage anotherPlayerWonBattleMessage) {
+            System.out.println(GREEN + anotherPlayerWonBattleMessage.getPlayerName() + " won battle" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerLostBattleMessage anotherPlayerLostBattleMessage) {
+            System.out.println(RED + anotherPlayerLostBattleMessage.getPlayerName() + " lost battle" + RESET);
+        }
+
+        else if(messageObj instanceof AnotherPlayerDrewBattleMessage anotherPlayerDrewBattleMessage){
+            System.out.println(ORANGE + anotherPlayerDrewBattleMessage.getPlayerName() + " drew battle" + RESET);
+        }
+
+        else if(messageObj instanceof PlayerDefeatedMessage playerDefeatedMessage) {
+            System.out.println(RED + playerDefeatedMessage.getPlayerName() + " was defeated!" + RESET);
+        }
+
+        else if(messageObj instanceof CrewInfectedAmountMessage crewInfectedAmountMessage) {
+            System.out.println("You have " + crewInfectedAmountMessage.getInfectedCrew() + " infected crew members");
+        }
+
+        else if(messageObj instanceof AnotherPlayerCrewInfectedMessage anotherPlayerCrewInfectedMessage) {
+            if(!anotherPlayerCrewInfectedMessage.getNamePlayer().equals(GameData.getNamePlayer())) {}
+                System.out.println(anotherPlayerCrewInfectedMessage.getNamePlayer() + " has " + anotherPlayerCrewInfectedMessage.getInfectedCrew() + " infected crew members");
+        }
+
+        else if(messageObj instanceof ScoreBoardMessage scoreBoardMessage) {
+            TuiPrinters.printScoreBoard(scoreBoardMessage.getScoreBoard());
+        }
+
+        else if (messageObj instanceof AnotherPlayerDisconnectMessage anotherPlayerDisconnectMessage) {
+            String playerName = anotherPlayerDisconnectMessage.getPlayerName();
+
+            System.out.println(ORANGE + playerName + " has disconnected!" + RESET);
+        }
+
+        else if (messageObj instanceof AnotherPlayerReconnectMessage anotherPlayerReconnectMessage) {
+            String playerName = anotherPlayerReconnectMessage.getPlayerName();
+
+            System.out.println(BLUE + playerName + " has reconnected!" + RESET);
+        }
+
+        else if (messageObj instanceof FreezeTimerMessage freezeTimerMessage) {
+            int freezeTime = freezeTimerMessage.getTimer();
+
+            if (freezeTime == 10)
+                System.out.println(ORANGE + "10 seconds remaining..." + RESET);
+            else if(freezeTime == 0)
+                System.out.println(ORANGE + "Timer is finished" + RESET);
+        }
+
+        else if (messageObj instanceof String messageString) {
+
+            switch (messageString) {
+                case "Ping":
+                    ClientDisconnectionDetection.setPingIsArrived(true);
+                    GameData.getSender().sendPong();
+                    break;
+
+                case "UpdateGameList":
+                    break;
+
+                case "NotValidGameId":
+                    System.err.println("Not valid game ID!");
+                    break;
+
+                case "NotValidPlayerNumber":
+                    System.err.println("The maximum number of players is 4, the minimum is 2");
+                    break;
+
+                case "NotAvailableName":
+                    System.err.println("Username not available!");
+                    break;
+
+                case "HandComponentDiscarded":
+                    System.out.println("Current hand component discarded");
+                    break;
+
+                case "FullHandComponent":
+                    System.err.println("Hand is full!");
+                    break;
+
+                case "AllowedToPlaceComponent":
+                    System.out.println("Component placed successfully!");
+                    BuildingData.resetHandComponent();
+                    break;
+
+                case "NotAllowedToPlaceComponent":
+                    System.err.println("Component not placed");
+                    if(BuildingData.getIsTimerExpired())
+                        System.out.print(ORANGE + "Time finished" + RESET);
+                    break;
+
+                case "ComponentBooked":
+                    System.out.println("Component booked");
+                    break;
+
+                case "HasBeenBooked":
+                    System.err.println("You cannot discard a booked component");
+                    break;
+
+                case "PickedBookedComponent":
+                    System.out.println("Picked booked");
+                    break;
+
+                case "EventCardDeckPutDown":
+                    System.out.println("Event card deck put down!");
+                    break;
+
+                case "CannotPickUpEventCardDeck":
+                    System.err.println("You cannot pick up the event card deck!");
+                    break;
+
+                case "TimerExpired":
+                    System.out.println(ORANGE + "Timer is expired!" + RESET);
+                    BuildingData.setIsTimerExpired(true);
+                    break;
+
+                case "YouAreReady":
+                    System.out.println("You are ready");
+                    break;
+
+                case "ActionNotAllowedInReadyState":
+                    System.err.println("Action not allowed in ready state!");
+                    break;
+
+                case "ComponentsNotConnectedGotRemoved":
+                    System.out.println("Some components not connected to the central unit have been removed!");
+                    break;
+
+                case "EmptyComponentCell":
+                    System.err.println("Empty component cell!");
+                    break;
+
+                case "ValidStartingPosition":
+                    System.out.println("Starting position set successfully!");
+                    break;
+
+                case "ComponentAlreadyOccupied":
+                    System.err.println("Component already occupied!");
+                    break;
+
+                case "CannotContainOrangeAlien":
+                    System.err.println("Cannot contain orange alien!");
+                    break;
+
+                case "CannotContainPurpleAlien":
+                    System.err.println("Cannot contain purple alien!");
+                    break;
+
+                case "PlayerNameNotFound":
+                    System.err.println("Unable to find player");
+                    break;
+
+                case "ResetActivePlayer":
+                    break;
+
+                case "AskToUseShield":
+                    EventCommands.responseChooseToUseShield();
+                    break;
+
+                case "AskToUseDoubleCannon":
+                    EventCommands.responseUseDoubleCannonRequest();
+                    break;
+
+                case "LandRequest":
+                    EventCommands.responseLandRequest();
+                    break;
+
+                case "LandingCompleted":
+                    System.out.println("Landing completed!");
+                    break;
+
+                case "PlanetLeft":
+                    System.out.println("You left the planet");
+                    break;
+
+                case "NotYourTurn":
+                    System.err.println("Not your turn!");
+                    break;
+
+                case "IncorrectPhase":
+                    System.err.println("Can't use that, incorrect phase!");
+                    break;
+
+                case "NotValidCoordinates":
+                    System.err.println("Invalid coordinates!");
+                    break;
+
+                case "EmptyHandComponent":
+                    System.err.println("You can't place with an empty hand, draw first!");
+                    break;
+
+                case "IllegalIndexEventCardDeck":
+                    System.err.println("You have only 3 decks, choose a valid index!");
+                    break;
+
+                case "NotEnoughBatteries":
+                    System.err.println("Not enough batteries!");
+                    break;
+
+                case "FullHandEventDeck":
+                    System.err.println("You first need to put down the deck you are looking at! ");
+                    break;
+
+                case "InvalidCoordinates":
+                    System.err.println("Invalid coordinates!");
+                    break;
+
+                case "InvalidComponent":
+                    System.err.println("Invalid component!");
+                    break;
+
+                case "BookedCellOccupied":
+                    System.err.println("You have already a component in that cell!");
+                    break;
+
+                case "IllegalBookIndex":
+                    System.err.println("You only have 2 cells, choose a valid index!");
+                    break;
+
+                case "ImpossibleToDestroyCentralUnit":
+                    System.err.println("Impossible to destroy central unit!");
+                    break;
+
+                case "ImpossibleToDestroyCorrectlyPlaced":
+                    System.err.println("Impossible to destroy a correctly placed component!");
+                    break;
+
+                case "PopulatingComplete":
+                    System.out.println("Populating completed!");
+                    break;
+
+                case "BatteryDiscarded":
+                    System.out.println("Battery discarded");
+                    break;
+
+                case "BatteryNotDiscarded":
+                    System.err.println("Unable to discard the battery!");
+                    break;
+
+                case "EmptyBatteryStorage":
+                    System.err.println("The battery storage is empty!");
+                    break;
+
+                case "IncorrectNumber":
+                    System.err.println("Incorrect number!");
+                    break;
+
+                case "NotEnoughBoxes":
+                    System.err.println("Not enough boxes!");
+                    break;
+
+                case "NotEnoughCrew":
+                    System.err.println("Not enough crew!");
+                    break;
+
+                case "CrewMemberNotDiscarded":
+                    System.err.println("Unable to discard the crew member!");
+                    break;
+
+                case "BoxNotDiscarded":
+                    System.err.println("Unable to discard the box!");
+                    break;
+
+                case "EmptyBoxSlot":
+                    System.err.println("Box storage slot is empty!");
+                    break;
+
+                case "BoxChosen":
+                    System.out.println("Box placed correctly");
+                    break;
+
+                case "BoxNotChosen":
+                    System.err.println("Unable to place selected box in that position!");
+                    break;
+
+                case "NotValidBoxContainer":
+                    System.err.println("The box storage is not correct for that type of box!");
+                    break;
+
+                case "EmptyReward":
+                    System.out.println("No reward boxes left!");
+                    break;
+
+                case "PermissionDenied":
+                    System.err.println("You cannot do that right now!");
+                    break;
+
+                case "BoxAlreadyThere":
+                    System.err.println("The box is already there!");
+                    break;
+
+                case "RedBoxMoved":
+                    System.out.println("Box moved successfully");
+                    break;
+
+                case "RedBoxNotMoved":
+                    System.err.println("Unable to move the box!");
+                    break;
+
+                case "CantStoreInANonRedStorage":
+                    System.err.println("You cannot store a red box in a non-red storage!");
+                    break;
+
+                case "BoxNotMoved":
+                    System.err.println("Unable to move the box!");
+                    break;
+
+                case "NotAStorageComponent":
+                    System.err.println("The component is not a storage component!");
+                    break;
+
+                case "BoxNotRemoved":
+                    System.err.println("Unable to remove the box!");
+                    break;
+
+                case "YouAreSafe":
+                    System.out.println(GREEN + "You are safe" + RESET);
+                    break;
+
+                case "NotValidSpaceShip":
+                    System.out.println(RED + "Your spaceship is trash, fix it!" + RESET);
+                    break;
+
+                case "ValidSpaceShip":
+                    System.out.println(GREEN + "Your spaceship is pretty good, you're ready to go!" + RESET);
+                    break;
+
+                case "AskContinueTravel":
+                    EventCommands.responseContinueTravel();
+                    break;
+
+                case "YouArePenalizedPlayer":
+                    System.out.println(RED + "You got penalized for this condition!" + RESET);
+                    break;
+
+                case "YouLeftTravel":
+                    System.out.println(PURPLE + "You left travel" + RESET);
+                    break;
+
+                case "YouAreContinuingTravel":
+                    System.out.println("You are continuing travel");
+                    break;
+
+                case "YouLost":
+                    System.out.println("Oh no! You lost the game");
+                    break;
+
+                case "YouWon":
+                    System.out.println("Congratulations! You win the game");
+                    break;
+
+                case "NoComponentHit":
+                    System.out.println(GREEN + "What a luck, no component hit!" + RESET);
+                    break;
+
+                case "NoComponentDamaged":
+                    System.out.println(GREEN + "Close call, no component damaged!" + RESET);
+                    break;
+
+                case "NoShieldAvailable":
+                    System.out.println(RED + "Oh no, you've no shield available!" + RESET);
+                    break;
+
+                case "NoCannonAvailable":
+                    System.out.println(RED + "Oh no, you've no cannons available!" + RESET);
+                    break;
+
+                case "MeteorDestroyed":
+                    System.out.println(GREEN + "Out of danger, you've destroyed the meteor!" + RESET);
+                    break;
+
+                case "RollDiceToFindColumn":
+                    System.out.println("Roll dice to find column (ROLL)");
+                    EventCommands.responseRollDice();
+                    break;
+
+                case "RollDiceToFindRow":
+                    System.out.println("Roll dice to find row (ROLL)");
+                    EventCommands.responseRollDice();
+                    break;
+
+                case "NothingGotDestroyed":
+                    System.out.println(GREEN + "Nothing got destroyed!" + RESET);
+                    break;
+
+                case "YouWonBattle":
+                    System.out.println(GREEN + "You won against raiders!" + RESET);
+                    break;
+
+                case "YouLostBattle":
+                    System.out.println(RED + "You lost against raiders!" + RESET);
+                    break;
+
+                case "YouDrewBattle":
+                    System.out.println(YELLOW + "You drew against raiders!" + RESET);
+                    break;
+
+                case "RaidersDefeated":
+                    System.out.println(GREEN + "Raiders got defeated!" + RESET);
+                    break;
+
+                case "YouGotLapped":
+                    System.out.println(PURPLE + "You got lapped by leader, you cannot continue travel!" + RESET);
+                    break;
+
+                case "YouHaveNoCrew":
+                    System.out.println(PURPLE + "You have no crew left, you cannot continue travel!" + RESET);
+                    break;
+
+                case "NoEnginePower":
+                    System.out.println(PURPLE + "You have zero engine power in Open Space, you cannot continue travel!" + RESET);
+                    break;
+
+                case "IDShipOutOfBounds":
+                    System.err.println("Building configuration not present!");
+                    break;
+
+                case "EventCardSkipped":
+                    System.out.println("Next event card got skipped!");
+                    break;
+
+                case "EventCardEnded":
+                    System.out.println("Event card ended...");
+                    break;
+
+                case "AskSelectSpaceshipPart":
+                    EventCommands.responseSelectSpaceshipPart();
+                    break;
+
+                case "SpaceshipPartKept":
+                    System.out.println("Spaceship part kept successfully!");
+
+                case "Freeze":
+                    System.out.println(BLUE + "Game freezed!" + RESET);
+                    System.out.println("You are the only player still connected, if no one reconnects within 1 minute, you will win by forfeit...");
+                    break;
+
+                case "Resume":
+                    System.out.println(GREEN + "Game resumed!" + RESET);
+                    break;
+
+                case "WonByForfeit":
+                    System.out.println(GREEN + "You won by forfeit!" + RESET);
+                    Sender sender = GameData.getSender();
+                    sender.leaveGame();
+                    GameData.resetData();
+                    break;
+
+                default:
+                    System.out.println(messageString);
+                    break;
+            }
+        }
+
+        else
+            System.err.println("A message was received but is not handled: " + messageObj.toString());
+    }
+}

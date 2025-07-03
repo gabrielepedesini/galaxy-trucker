@@ -1,0 +1,593 @@
+package org.progetto.server.connection.games;
+
+import org.progetto.messages.toClient.*;
+import org.progetto.messages.toClient.Building.PickedEventCardMessage;
+import org.progetto.messages.toClient.Spaceship.UpdateOtherTravelersShipMessage;
+import org.progetto.messages.toClient.Spaceship.UpdateSpaceshipMessage;
+import org.progetto.messages.toClient.Track.UpdateTrackMessage;
+import org.progetto.server.connection.ServerDisconnectionDetection;
+import org.progetto.server.connection.MessageSenderService;
+import org.progetto.server.connection.Sender;
+import org.progetto.server.controller.*;
+import org.progetto.server.controller.events.*;
+import org.progetto.server.model.Game;
+import org.progetto.server.model.GamePhase;
+import org.progetto.server.model.Player;
+import org.progetto.server.model.events.EventCard;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class GameManager {
+
+    // =======================
+    // ATTRIBUTES
+    // =======================
+
+    private final HashMap<Player, Sender> playerSenders;
+
+    private final ArrayList<Player> disconnectedPlayers;
+
+    private final ArrayList<Player> losingPlayers;
+
+    // List to save playersOrder after building
+    private final ArrayList<Player> notCheckedReadyPlayers;
+
+    GameThread gameThread;
+    private final Game game;
+    private EventControllerAbstract eventController;
+    private final TimerThreadController timer;
+    private final FreezeTimerThread freezeTimer;
+
+    private static int gameDisconnectionDetectionInterval;
+
+    // =======================
+    // CONSTRUCTORS
+    // =======================
+
+    public GameManager(int idGame, int numPlayers, int level) {
+        this.playerSenders = new HashMap<>();
+        this.disconnectedPlayers = new ArrayList<>();
+        this.losingPlayers = new ArrayList<>();
+        this.notCheckedReadyPlayers = new ArrayList<>();
+
+        this.game = new Game(idGame, numPlayers, level);
+        this.eventController = null;
+        this.timer = new TimerThreadController(this, 90, 2);
+        this.freezeTimer = new FreezeTimerThread(this, 60);
+        GameManagerMaps.addWaitingGameManager(idGame, this);
+
+        gameThread = new GameThread(this);
+        gameThread.start();
+
+        startGamePinger();
+    }
+
+    // =======================
+    // GETTERS
+    // =======================
+
+    public ArrayList<Sender> getSendersCopy() {
+        ArrayList<Sender> sendersCopy;
+
+        synchronized (playerSenders) {
+            sendersCopy = new ArrayList<>(playerSenders.values());
+        }
+
+        return sendersCopy;
+    }
+
+    public ArrayList<Player> getCheckedNotReadyPlayersCopy() {
+        ArrayList<Player> checkedNotReadyPlayersCopy;
+
+        synchronized (notCheckedReadyPlayers) {
+            checkedNotReadyPlayersCopy = new ArrayList<>(notCheckedReadyPlayers);
+        }
+
+        return checkedNotReadyPlayersCopy;
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public EventControllerAbstract getEventController() {
+        return eventController;
+    }
+
+    public GameThread getGameThread() {
+        return gameThread;
+    }
+
+    public TimerThreadController getTimerController() {
+        return timer;
+    }
+
+    public FreezeTimerThread getFreezeTimer() {
+        return freezeTimer;
+    }
+
+    public boolean getTimerExpired() {
+        return timer.getIsTimerExpired();
+    }
+
+    public Sender getSenderByPlayer(Player player) {
+        return playerSenders.get(player);
+    }
+
+    public Player getPlayerBySender(Sender sender) throws IllegalStateException {
+
+        for (Map.Entry<Player, Sender> entry : playerSenders.entrySet()) {
+            if(entry.getValue().equals(sender))
+                return entry.getKey();
+        }
+        throw new IllegalStateException("PlayerNotFound");
+    }
+
+    public ArrayList<Player> getDisconnectedPlayersCopy() {
+        synchronized (disconnectedPlayers) {
+            return new ArrayList<>(disconnectedPlayers);
+        }
+    }
+
+    public int getSizeDisconnectedPlayers() {
+        synchronized (disconnectedPlayers) {
+            return disconnectedPlayers.size();
+        }
+    }
+
+    public Player getDisconnectedPlayerByName(String playerName) {
+        synchronized (disconnectedPlayers) {
+            for (Player player : disconnectedPlayers) {
+                if(player.getName().equals(playerName))
+                    return player;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Player> getLosingPlayersCopy() {
+        synchronized (losingPlayers) {
+            return new ArrayList<>(losingPlayers);
+        }
+    }
+
+    // =======================
+    // SETTERS
+    // =======================
+
+    public void setGameThread(GameThread gameThread) {
+        this.gameThread = gameThread;
+    }
+
+    public static void setGameDisconnectionDetectionInterval(int gameDisconnectionDetectionInterval) {
+        GameManager.gameDisconnectionDetectionInterval = gameDisconnectionDetectionInterval;
+    }
+
+    // =======================
+    // OTHER METHODS
+    // =======================
+
+    /**
+     * Starts a thread that pings all players in the game at regular intervals to check for disconnections
+     *
+     * @author Alessandro
+     */
+    private void startGamePinger() {
+        Thread pingThread = new Thread(() -> {
+            while (true) {
+                try {
+                    gamePinger();
+                    Thread.sleep(gameDisconnectionDetectionInterval);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        pingThread.setName("GamePingerThread");
+        pingThread.setDaemon(true);
+        pingThread.start();
+    }
+
+    /**
+     * Pings all players in the game to check if they are still connected
+     *
+     * @author Alessandro
+     */
+    private void gamePinger() {
+        ArrayList<Sender> sendersCopy = getSendersCopy();
+
+        for (Sender sender : sendersCopy) {
+            ServerDisconnectionDetection.ping(() -> disconnectPlayer(getPlayerBySender(sender)), "Game", sender);
+        }
+    }
+
+    /**
+     * Sets the color for each player in the game and sends the color to each player
+     *
+     * @author Alessandro
+     */
+    public void setAndSendPlayersColor(){
+        ArrayList<Player> players = game.getPlayersCopy();
+
+        for (int i = 0; i < game.getMaxNumPlayers(); i++) {
+            Player player = players.get(i);
+            player.setColor(i);
+
+            Sender sender = getSenderByPlayer(player);
+
+            MessageSenderService.sendMessage(new PlayerColorMessage(player.getColor()), sender);
+        }
+    }
+
+    /**
+     * Adds a player to the list of losing players
+     *
+     * @author Alessandro
+     * @param player the player to add
+     */
+    public void addLosingPlayer(Player player) {
+        synchronized (losingPlayers) {
+            losingPlayers.add(player);
+        }
+    }
+
+    /**
+     * Checks if a player is in the list of losing players
+     *
+     * @author Alessandro
+     * @param player the player to check
+     * @return true if the player is losing, false otherwise
+     */
+    public boolean isLosingPlayer(Player player) {
+        synchronized (losingPlayers) {
+            return losingPlayers.contains(player);
+        }
+    }
+
+    /**
+     * Disconnects a player from the game, removing them from the game and notifying other players
+     *
+     * @author Alessandro
+     * @param player the player to disconnect
+     */
+    public synchronized void disconnectPlayer(Player player) {
+        Game game = getGame();
+
+        game.removePlayer(player);
+        removeSender(player);
+
+        if (game.getPlayersSize() == 0) {
+            GameManagerMaps.removeGameManager(game.getId());
+            System.out.println("Game " +  game.getId() + " deleted");
+
+            if (game.getPhase().equals(GamePhase.WAITING))
+                LobbyController.broadcastLobbyMessage("UpdateGameList");
+            return;
+        }
+
+        broadcastGameMessage(new AnotherPlayerDisconnectMessage(player.getName()));
+
+        if (game.getPhase().equals(GamePhase.WAITING)) {
+            broadcastGameMessage(new WaitingPlayersMessage(game.getPlayersCopy()));
+
+            LobbyController.broadcastLobbyMessage("UpdateGameList");
+            return;
+        }
+
+        if (game.getPhase().equals(GamePhase.INIT)) {
+            game.setPhase(GamePhase.WAITING);
+            broadcastGameMessage(new NewGamePhaseMessage(game.getPhase().toString()));
+            broadcastGameMessage(new WaitingPlayersMessage(game.getPlayersCopy()));
+
+            gameThread.notifyThread();
+
+            GameManagerMaps.addWaitingGameManager(game.getId(), this);
+
+            LobbyController.broadcastLobbyMessage("UpdateGameList");
+
+            return;
+        }
+
+        addDisconnectedPlayers(player);
+
+        if (game.getPhase().equals(GamePhase.EVENT)) {
+
+            broadcastGameMessage(new UpdateSpaceshipMessage(player.getSpaceship(), player));
+        }
+
+        if (game.getPhase().equals(GamePhase.TRAVEL)) {
+
+            game.getBoard().removeTraveler(player);
+        }
+
+        if (game.getPlayersSize() == 1) {
+            broadcastGameMessage("Freeze");
+            getFreezeTimer().startTimer();
+        } else
+            gameThread.notifyThread();
+    }
+
+    /**
+     * Reconnects a player to the game, restoring their state and notifying other players
+     *
+     * @author Alessandro
+     * @param namePlayer the name of the player to reconnect
+     * @param sender the sender associated with the player
+     */
+    public synchronized void reconnectPlayer(String namePlayer, Sender sender) {
+        Player player = getDisconnectedPlayerByName(namePlayer);
+
+        if (player == null)
+            throw new IllegalStateException("FailedToReconnect");
+
+        removeDisconnectedPlayer(player);
+        addSender(player, sender);
+        game.addPlayer(player);
+
+        broadcastGameMessageToOthers(new AnotherPlayerReconnectMessage(player.getName()), sender);
+
+        Game game = getGame();
+
+        Player activePlayer = game.getActivePlayer();
+        String nameActivePlayer = "";
+
+        if (activePlayer != null)
+            nameActivePlayer = activePlayer.getName();
+
+        MessageSenderService.sendMessage(new ReconnectionGameData(game.getLevel(), game.getPhase().toString(), player.getColor(), nameActivePlayer), sender);
+
+        if (isLosingPlayer(player)) {
+            MessageSenderService.sendMessage("GameOver", sender);
+            return;
+        }
+
+        if (game.getPhase().equals(GamePhase.POPULATING))
+            PopulatingController.askAliensToSinglePlayer(this, player); // No need to set the player as not ready, the initialization method already did
+
+        else if (game.getPhase().equals(GamePhase.POSITIONING)) {
+            PositioningController.showPlayersInPositioningDecisionOrder(this, sender);
+            PositioningController.showStartingPositions(this, sender);
+
+            PositioningController.reconnectPlayer(this, player, sender);
+        }
+
+        else if (game.getPhase().equals(GamePhase.EVENT)) {
+            MessageSenderService.sendMessage(new UpdateSpaceshipMessage(player.getSpaceship(), player), sender);
+            MessageSenderService.sendMessage(new UpdateOtherTravelersShipMessage(game.getBoard().getCopyTravelers()), sender);
+            MessageSenderService.sendMessage(new UpdateTrackMessage(GameController.getAllPlayersInTrackCopy(this), game.getBoard().getTrack()), sender);
+            MessageSenderService.sendMessage(new PickedEventCardMessage(game.getActiveEventCard()), sender);
+
+            if (!player.getHasLeft()) {
+                if(eventController.isParticipant(player))
+                    eventController.reconnectPlayer(player, sender);
+                else
+                    MessageSenderService.sendMessage("IsNotParticipant", sender);
+            }
+        }
+
+        else if (game.getPhase().equals(GamePhase.TRAVEL)) {
+            MessageSenderService.sendMessage(new UpdateTrackMessage(GameController.getAllPlayersInTrackCopy(this), game.getBoard().getTrack()), sender);
+
+            if (!player.getHasLeft()) {
+                game.getBoard().addTraveler(player);
+                MessageSenderService.sendMessage("AskContinueTravel", sender);
+            }
+        }
+
+        if (game.getPlayersSize() == 2) {
+            getFreezeTimer().stopTimer();
+            broadcastGameMessage("Resume");
+        }
+
+        getTimerController().notifyThread();
+        gameThread.notifyThread();
+    }
+
+    /**
+     * Adds a sender for a player, allowing messages to be sent to that player
+     *
+     * @author Alessandro
+     * @param player the player to add the sender for
+     * @param socketWriter the sender associated with the player
+     */
+    public void addSender(Player player, Sender socketWriter){
+        synchronized (playerSenders){
+            playerSenders.put(player, socketWriter);
+        }
+    }
+
+    /**
+     * Removes a sender for a player, stopping messages from being sent to that player
+     *
+     * @author Alessandro
+     * @param player the player to remove the sender for
+     */
+    public void removeSender(Player player){
+        synchronized (playerSenders){
+            playerSenders.remove(player);
+        }
+    }
+
+    /**
+     * Adds a player to the list of disconnected players
+     *
+     * @author Alessandro
+     * @param player the player to add
+     */
+    public void addDisconnectedPlayers(Player player){
+        synchronized (disconnectedPlayers){
+            disconnectedPlayers.add(player);
+        }
+    }
+
+    /**
+     * Removes a player from the list of disconnected players
+     *
+     * @author Alessandro
+     * @param player the player to remove
+     */
+    public void removeDisconnectedPlayer(Player player){
+        synchronized (disconnectedPlayers){
+            disconnectedPlayers.remove(player);
+        }
+    }
+
+    /**
+     * Adds a player to the list of players that have not yet been checked for readiness
+     *
+     * @author Alessandro
+     * @param player the player to add
+     */
+    public void addNotCheckedReadyPlayer(Player player){
+        synchronized (notCheckedReadyPlayers){
+            notCheckedReadyPlayers.add(player);
+        }
+    }
+
+    /**
+     * Removes a player from the list of players that have not yet been checked for readiness
+     *
+     * @author Alessandro
+     * @param player the player to remove
+     */
+    public void removeNotCheckedReadyPlayer(Player player){
+        synchronized (notCheckedReadyPlayers){
+            notCheckedReadyPlayers.remove(player);
+        }
+    }
+
+    /**
+     * Broadcasts a game message to all players in the game
+     *
+     * @author Alessandro
+     * @param messageObj the message object to send
+     */
+    public synchronized void broadcastGameMessage(Object messageObj) {
+        ArrayList<Sender> sendersCopy = getSendersCopy();
+
+        for (Sender sender : sendersCopy) {
+            MessageSenderService.sendMessage(messageObj, sender);
+        }
+    }
+
+    /**
+     * Broadcasts a game message to all players in the game who are not ready
+     *
+     * @author Alessandro
+     * @param messageObj the message object to send
+     */
+    public synchronized void broadcastGameToNotReadyPlayersMessage(Object messageObj) {
+        ArrayList<Player> playersCopy = game.getPlayersCopy();
+
+        for (Player p : playersCopy) {
+            MessageSenderService.sendMessage(messageObj, getSenderByPlayer(p));
+        }
+    }
+
+    /**
+     * Broadcasts a game message to all players in the game except the sender
+     *
+     * @author Alessandro
+     * @param messageObj the message object to send
+     * @param sender the sender who should not receive the message
+     */
+    public synchronized void broadcastGameMessageToOthers(Object messageObj, Sender sender) {
+        ArrayList<Sender> sendersCopy = getSendersCopy();
+
+        for (Sender s : sendersCopy) {
+            if (!s.equals(sender)) {
+                MessageSenderService.sendMessage(messageObj, s);
+            }
+        }
+    }
+
+    /**
+     * Creates an event controller based on the active event card in the game
+     *
+     * @author Gabriele
+     */
+    public void createEventController() {
+        EventCard eventCard = game.getActiveEventCard();
+
+        switch (eventCard.getType()) {
+
+            case EPIDEMIC:
+                eventController = new EpidemicController(this);
+                break;
+
+            case STARDUST:
+                eventController = new StardustController(this);
+                break;
+
+            case OPENSPACE:
+                eventController = new OpenSpaceController(this);
+                break;
+
+            case PLANETS:
+                eventController = new PlanetsController(this);
+                break;
+
+            case BATTLEZONE:
+                eventController = new BattlezoneController(this);
+                break;
+
+            case LOSTSHIP:
+                eventController = new LostShipController(this);
+                break;
+
+            case LOSTSTATION:
+                eventController = new LostStationController(this);
+                break;
+
+            case METEORSRAIN:
+                eventController = new MeteorsRainController(this);
+                break;
+
+            case PIRATES:
+                eventController = new PiratesController(this);
+                break;
+
+            case SMUGGLERS:
+                eventController = new SmugglersController(this);
+                break;
+
+            case SLAVERS:
+                eventController = new SlaversController(this);
+                break;
+
+            default:
+                eventController = null;
+                break;
+        }
+    }
+
+    /**
+     * Starts the game timer
+     *
+     * @author Alessandro
+     */
+    public void startTimer() {
+        timer.startTimer();
+    }
+
+    /**
+     * Leaves the game for a player
+     *
+     * @author Alessandro
+     * @param player the player who is leaving
+     * @param sender the sender associated with the player
+     */
+    public void leaveGame(Player player, Sender sender) {
+        game.removePlayer(player);
+        removeSender(player);
+
+        if(game.getPlayersSize() == 0){
+            GameManagerMaps.removeGameManager(game.getId());
+            System.out.println("Game " +  game.getId() + " deleted");
+        }
+
+        LobbyController.addSender(sender);
+    }
+}

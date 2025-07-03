@@ -1,0 +1,1117 @@
+/* ============================
+   GENERAL
+   ============================ */
+
+.root {
+    -fx-font-family: 'Inter 18pt', sans-serif;
+}
+
+.text-input,
+.text-field,
+.text-area {
+    -fx-highlight-fill: rgba(155, 155, 155, 0.3);
+    -fx-highlight-text-fill: #2b2b2b;
+}
+
+.button {
+    -fx-background-color: linear-gradient(to bottom right, #FACD0B, #DF9A00);
+    -fx-text-fill: #491f06;
+    /*-fx-font-family: 'Orgovan';*/
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-size: 14;
+    -fx-font-weight: 700;
+    -fx-border-color: rgb(223, 154, 0);
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.button:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: linear-gradient(to bottom right, #afafaf, #8d8d8d);
+    -fx-text-fill: #2d2d2d;
+    -fx-font-size: 14;
+    -fx-font-weight: 700;
+    -fx-border-color: rgb(132, 132, 132);
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: default;
+}
+
+.button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(223, 154, 0, 0.4), 12, 0.4, 0, 2
+    );
+    -fx-cursor: hand;
+}
+
+.button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 0, 2);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.text-field {
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-font-size: 14;
+    -fx-font-weight: 400;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-text-fill: #2d3748;
+    -fx-prompt-text-fill: rgba(45, 55, 72, 0.6);
+    -fx-padding: 8 12 8 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 4, 0.2, 0, 2);
+}
+
+.text-field:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-border-color: rgba(223, 154, 0, 0.8);
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(223, 154, 0, 0.4), 8, 0.3, 0, 0);
+}
+
+.radio-button {
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-font-size: 14;
+    -fx-font-weight: 400;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0.5, 0, 1);
+}
+
+.radio-button:selected {
+    -fx-text-fill: rgba(255, 255, 255, 1);
+}
+
+.radio-button .radio {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-width: 2;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: rgba(223, 154, 0, 0.9);
+    -fx-border-color: rgb(223, 154, 0);
+}
+
+.radio-button:hover .radio {
+    -fx-border-color: rgba(223, 154, 0, 0.6);
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
+.combo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 4, 0.2, 0, 2);
+    -fx-padding: 2 4 2 4;
+}
+
+.combo-box:focused {
+    -fx-border-color: rgba(223, 154, 0, 0.8);
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(223, 154, 0, 0.4), 8, 0.3, 0, 0);
+}
+
+.combo-box:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-border-color: rgba(223, 154, 0, 0.5);
+}
+
+.combo-box .combo-box-base {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.combo-box .text-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #2d3748;
+    -fx-font-size: 14;
+    -fx-font-weight: 400;
+    -fx-prompt-text-fill: rgba(45, 55, 72, 0.6);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-radius: 0 8 8 0;
+}
+
+.combo-box .arrow-button:hover {
+    -fx-background-color: rgba(223, 154, 0, 0.1);
+}
+
+.combo-box .arrow-button .arrow {
+    -fx-background-color: rgba(45, 55, 72, 0.7);
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-scale-shape: true;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+}
+
+.combo-box:focused .arrow-button .arrow {
+    -fx-background-color: rgba(223, 154, 0, 0.8);
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: rgba(196, 196, 196, 0.95);
+    -fx-border-color: rgba(223, 154, 0, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 12, 0.4, 0, 6);
+    -fx-padding: 4;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2d3748;
+    -fx-font-size: 14;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(223, 154, 0, 0.2);
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: rgba(223, 154, 0, 0.3);
+    -fx-text-fill: #2d3748;
+}
+
+.draggable {
+    -fx-cursor: move;
+}
+
+.scroll-bar {
+    -fx-background-color: rgba(240, 240, 240, 0);
+    -fx-border-color: rgba(224, 224, 224, 0);
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #adadad;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #989898;
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #676767;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: rgba(240, 240, 240, 0);
+    -fx-border-color: rgba(224, 224, 224, 0);
+    -fx-padding: 3px;
+}
+
+.scroll-bar .increment-button .increment-arrow,
+.scroll-bar .decrement-button .decrement-arrow {
+    -fx-background-color: rgba(96, 96, 96, 0);
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+}
+
+.scroll-bar .track {
+    -fx-background-color: rgba(248, 248, 248, 0);
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal {
+    -fx-pref-height: 12px;
+}
+
+.scroll-bar:vertical {
+    -fx-pref-width: 12px;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+/* ============================
+   CONNECTION VIEW
+   ============================ */
+
+#connectionPane {
+    -fx-background-image: url("../img/space-background-1.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+}
+
+#titlePane {
+    -fx-background-image: url("../img/title.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: contain;
+    -fx-background-position: center center;
+}
+
+/*#connectionFormPane {*/
+/*    -fx-padding: 35;*/
+/*    -fx-alignment: center;*/
+/*    -fx-background-color: linear-gradient(to bottom right, #a3aea7, #535e5d);*/
+/*    -fx-border-color: rgba(43, 50, 57, 0.5);*/
+/*    -fx-border-width: 2;*/
+/*    -fx-background-radius: 8;*/
+/*    -fx-border-radius: 8;*/
+/*}*/
+
+#connectionFormPane {
+    -fx-padding: 35;
+    -fx-alignment: center;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+/* ============================
+   CHOOSE GAME VIEW
+   ============================ */
+
+#chooseGamePane {
+    -fx-background-image: url("../img/space-background-1.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+}
+
+/*#chooseGamePaneWrapper {*/
+/*    -fx-padding: 10;*/
+/*    -fx-alignment: center;*/
+/*    -fx-background-color: linear-gradient(to bottom right, #a3aea7, #535e5d);*/
+/*    -fx-border-color: rgba(43, 50, 57, 0.5);*/
+/*    -fx-border-width: 2;*/
+/*    -fx-background-radius: 8;*/
+/*    -fx-border-radius: 8;*/
+/*}*/
+
+#chooseGamePaneWrapper {
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#createGamePane,
+#joinGamePane {
+    -fx-background-color: transparent;
+    -fx-padding: 25;
+    -fx-background-radius: 8;
+}
+
+#createGamePane .sectionTitle,
+#joinGamePane .sectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#gamesTable {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-padding: 0;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-max-height: Infinity;
+    -fx-vgrow: ALWAYS;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 12, 0.3, 0, 4);
+}
+
+#gamesTable .column-header-background {
+    -fx-background-color: rgba(255, 255, 255, 0.45);
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
+}
+
+#gamesTable .column-header {
+    -fx-background-color: transparent;
+    -fx-padding: 6 10 6 10;
+    -fx-border-width: 0;
+}
+
+#gamesTable .column-header .label {
+    -fx-text-fill: rgba(20, 20, 20, 0.95);
+    -fx-font-weight: 600;
+    -fx-font-size: 12;
+    -fx-padding: 0;
+    -fx-alignment: CENTER-LEFT;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 2, 0.5, 0, 1);
+}
+
+#gamesTable .table-cell {
+    -fx-text-fill: rgba(255, 255, 255, 1);
+    -fx-padding: 10 10 6 10;
+    -fx-alignment: CENTER-LEFT;
+    -fx-cell-size: 40px;
+    -fx-font-size: 12;
+    -fx-background-color: transparent;
+}
+
+#gamesTable .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
+}
+
+#gamesTable .table-row-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+#gamesTable .table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+}
+
+#gamesTable .table-row-cell:selected {
+    -fx-background-color: rgba(223, 154, 0, 0.3);
+    -fx-border-color: rgba(223, 154, 0, 0.5);
+    -fx-border-width: 1 0 1 0;
+}
+
+#gamesTable .table-row-cell:selected .table-cell {
+    -fx-text-fill: rgba(255, 255, 255, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0.5, 0, 1);
+}
+
+#gamesTable .table-column {
+    -fx-border-width: 0;
+}
+
+#gamesTable .scroll-bar:vertical,
+#gamesTable .scroll-bar:horizontal {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#gamesTable .scroll-bar:vertical .track,
+#gamesTable .scroll-bar:horizontal .track {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#gamesTable .scroll-bar:vertical .thumb,
+#gamesTable .scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(223, 154, 0, 0.6);
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+#gamesTable .scroll-bar:vertical .thumb:hover,
+#gamesTable .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(223, 154, 0, 0.8);
+}
+
+#gamesTable .scroll-bar:vertical .thumb:pressed,
+#gamesTable .scroll-bar:horizontal .thumb:pressed {
+    -fx-background-color: rgb(223, 154, 0);
+}
+
+#gamesTable .scroll-bar .increment-button,
+#gamesTable .scroll-bar .decrement-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+#gamesTable .placeholder .label {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-style: italic;
+    -fx-font-size: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0.5, 0, 1);
+}
+
+#gamesTable .button {
+    -fx-background-color: linear-gradient(to bottom right, #facd0b, #ed881a);
+    -fx-text-fill: #491f06;
+    -fx-font-size: 14;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: 700;
+    -fx-border-color: rgb(223, 154, 0);
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0 8 0 8;
+    -fx-alignment: CENTER;
+}
+
+#gamesTable .table-column:last-child .table-cell {
+    -fx-alignment: CENTER;
+}
+
+/* ============================
+   WAITING ROOM VIEW
+   ============================ */
+
+#waitingRoomPane {
+    -fx-background-image: url("../img/space-background-1.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+}
+
+/*#waitingRoomContainer {*/
+/*    -fx-padding: 35;*/
+/*    -fx-alignment: center;*/
+/*    -fx-background-color: linear-gradient(to bottom right, #a3aea7, #535e5d);*/
+/*    -fx-border-color: rgba(43, 50, 57, 0.5);*/
+/*    -fx-border-width: 2;*/
+/*    -fx-background-radius: 8;*/
+/*    -fx-border-radius: 8;*/
+/*}*/
+
+#waitingRoomContainer {
+    -fx-padding: 35;
+    -fx-alignment: center;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#waitingRoomContainer .sectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#waitingRoomContainer .labelText {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14;
+    -fx-font-weight: 500;
+}
+
+#waitingRoomContainer .valueText {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 14;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: 700;
+}
+
+#waitingRoomContainer #playersTable {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-padding: 0;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-max-height: Infinity;
+    -fx-vgrow: ALWAYS;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 12, 0.3, 0, 4);
+}
+
+#playersTable .column-header-background {
+    -fx-background-color: rgba(255, 255, 255, 0.45);
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
+}
+
+#playersTable .column-header {
+    -fx-background-color: transparent;
+    -fx-padding: 6 12 6 12;
+    -fx-border-width: 0;
+}
+
+#playersTable .column-header .label {
+    -fx-text-fill: rgba(20, 20, 20, 0.95);
+    -fx-font-weight: 600;
+    -fx-font-size: 14;
+    -fx-padding: 0;
+    -fx-alignment: CENTER-LEFT;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 2, 0.5, 0, 1);
+}
+
+#playersTable .table-cell {
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-padding: 12 12 6 12;
+    -fx-alignment: CENTER-LEFT;
+    -fx-cell-size: 40px;
+    -fx-font-size: 14;
+    -fx-background-color: transparent;
+}
+
+#playersTable .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
+}
+
+#playersTable .table-row-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+#playersTable .table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+}
+
+#playersTable .table-row-cell:selected {
+    -fx-background-color: rgba(223, 154, 0, 0.3);
+    -fx-border-color: rgba(223, 154, 0, 0.5);
+    -fx-border-width: 1 0 1 0;
+}
+
+#playersTable .table-row-cell:selected .table-cell {
+    -fx-text-fill: rgba(255, 255, 255, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0.5, 0, 1);
+}
+
+#playersTable .table-column {
+    -fx-border-width: 0;
+}
+
+#playersTable .scroll-bar:vertical,
+#playersTable .scroll-bar:horizontal {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#playersTable .scroll-bar:vertical .track,
+#playersTable .scroll-bar:horizontal .track {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#playersTable .scroll-bar:vertical .thumb,
+#playersTable .scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(223, 154, 0, 0.6);
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+#playersTable .scroll-bar:vertical .thumb:hover,
+#playersTable .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(223, 154, 0, 0.8);
+}
+
+#playersTable .scroll-bar:vertical .thumb:pressed,
+#playersTable .scroll-bar:horizontal .thumb:pressed {
+    -fx-background-color: rgb(223, 154, 0);
+}
+
+#playersTable .scroll-bar .increment-button,
+#playersTable .scroll-bar .decrement-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+#playersTable .placeholder .label {
+    -fx-text-fill: rgba(255, 255, 255, 0.6);
+    -fx-font-style: italic;
+    -fx-font-size: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0.5, 0, 1);
+}
+
+#waitingRoomPane .waitingStatusLabel {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 18;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: 700;
+    -fx-alignment: CENTER-RIGHT;
+    -fx-text-alignment: right;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 3, 0.6, 0, 2);
+}
+
+/* ============================
+   BUILDING VIEW
+   ============================ */
+
+#buildingScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#buildingBorderPane {
+    -fx-padding: 25;
+}
+
+#activePlayersLabel,
+#buildingSectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 20;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#buildingMainTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#buildingMainDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+}
+
+#eventCardDisplay {
+    -fx-background-color: rgba(0, 0, 0, 0.85);
+    -fx-padding: 0;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+}
+
+#playerListViewContainer,
+#discardedComponentsListWrapper {
+    -fx-padding: 25;
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-border-color: rgba(43, 50, 57, 0.5);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#discardedComponentsScrollPane,
+#discardedComponentsList {
+    -fx-background-color: transparent !important;
+    -fx-border-color: transparent !important;
+}
+
+#playerListView {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background: transparent;
+    -fx-hbar-policy: NEVER !important;
+}
+
+#playerListView .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-min-height: 0;
+}
+
+#playerListView .list-cell {
+    -fx-background-radius: 8;
+    -fx-padding: 0 0 5 0;
+    -fx-text-background-color: transparent;
+}
+
+#playerListView .list-cell:filled:selected {
+    -fx-background-color: rgba(226, 226, 226, 0.4);
+    -fx-text-fill: black;
+    -fx-text-background-color: transparent;
+}
+
+#trash {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0.5, 0, 0);
+}
+
+/*#spaceshipCell {*/
+/*    -fx-border-color: black;*/
+/*    -fx-background-color: rgba(255, 255, 255, 0.25);*/
+/*}*/
+
+#handComponentBox {
+    -fx-border-color: rgba(128, 128, 128, 0.5);
+    -fx-background-color: rgba(0, 0, 0, 0.25);
+}
+
+/*#bookedArray {*/
+/*    -fx-background-color: rgba(0, 0, 0, 0.25) !important;*/
+/*}*/
+
+/*#bookedArray Pane {*/
+/*    -fx-border-color: black !important;*/
+/*    -fx-background-color: rgba(0, 0, 0, 0.25) !important;*/
+/*}*/
+
+#timerContainer {
+    -fx-alignment: center;
+}
+
+#timerLabel {
+    -fx-font-size: 24;
+}
+
+.flips-text {
+    -fx-fill: #bdbdbd;
+    -fx-font-size: 18px;
+}
+
+.flips-number {
+    -fx-fill: rgb(223, 154, 0);
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+}
+
+/*#batterySlot, #crewSlot, #boxSlot {*/
+/*    -fx-border-color: gray;*/
+/*    -fx-background-color: rgba(0, 0, 0, 0.25);*/
+/*}*/
+
+#deck0Image, #deck1Image, #deck2Image {
+    -fx-cursor: hand;
+}
+
+#componentDeck {
+    -fx-cursor: hand;
+}
+
+#rotateButton {
+    -fx-cursor: hand;
+}
+
+/* ============================
+   ADJUSTING VIEW
+   ============================ */
+
+#adjustingScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#adjustingSectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#adjustingSectionDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}
+
+/* ============================
+   POSITIONING VIEW
+   ============================ */
+
+#positioningScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#positioningBorderPane {
+    -fx-padding: 25;
+}
+
+#positioningSectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#positioningSectionDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}
+
+#playerListWrapper {
+    -fx-padding: 25px;
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-min-width: 200px;
+    -fx-border-color: rgba(43, 50, 57, 0.5);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#playerListWrapper #playerListTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 24;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#playerListWrapper .player-item {
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-font-size: 14;
+    -fx-font-weight: 500;
+}
+
+/* ============================
+   POPULATING VIEW
+   ============================ */
+
+#populatingScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#populatingBorderPane {
+    -fx-padding: 25;
+}
+
+#populatingSectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#populatingSectionDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}
+
+/* ============================
+   EVENT VIEW
+   ============================ */
+
+#eventScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#eventBorderPane {
+    -fx-padding: 25;
+}
+
+#activePlayersLabel,
+#eventSectionTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 20;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#eventCardDisplay {
+    -fx-background-color: rgba(0, 0, 0, 0.85);
+    -fx-padding: 0;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+}
+
+#eventSidebarWrapper {
+    -fx-padding: 25;
+}
+
+#discardedComponentsList {
+    -fx-background-color: transparent !important;
+    -fx-border-color: transparent !important;
+}
+
+#eventMainTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#eventMainDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+}
+
+#activityChatContainer {
+    -fx-padding: 25;
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-border-color: rgba(43, 50, 57, 0.5);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#activityChatLabel {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 20;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#firePowerValue,
+#enginePowerValue,
+#crewValue,
+#destroyedValue,
+#creditsValue {
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-font-size: 24;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#boxScrollPane{
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-border-color: rgba(43, 50, 57, 0.5);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#boxContainer{
+    -fx-background-color: rgba(15, 25, 25, 0.5);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+/* ============================
+   TRAVEL VIEW
+   ============================ */
+
+#trackScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#trackBorderPane {
+    -fx-padding: 25;
+}
+
+#playerListWrapper {
+    -fx-padding: 25px;
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-min-width: 200px;
+    -fx-border-color: rgba(43, 50, 57, 0.5);
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+#playerListWrapper #playerListTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 20;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#playerListWrapper .player-item {
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-font-size: 14;
+    -fx-font-weight: 500;
+}
+
+#travelMainTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#travelMainDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}
+
+/* ============================
+   GAME OVER VIEW
+   ============================ */
+
+#endGameScrollPane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+#endGameBorderPane {
+    -fx-padding: 25;
+}
+
+#endGameTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#endGameDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}
+
+.score-row {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 10;
+    -fx-padding: 10px 20px;
+    -fx-spacing: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);
+}
+
+.score-rank {
+    -fx-font-size: 18px;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-min-width: 50px;
+}
+
+.score-name {
+    -fx-font-size: 16px;
+    -fx-text-fill: white;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: bold;
+    -fx-min-width: 100px;
+}
+
+.score-points {
+    -fx-font-size: 16px;
+    -fx-text-fill: #0fcb1d;
+    -fx-font-family: 'Inter 18pt SemiBold', sans-serif;
+    -fx-font-weight: bold;
+}
+
+/* ============================
+   FREEZE VIEW
+   ============================ */
+
+#freezePane {
+    -fx-background-color: rgba(0, 0, 0, 0.95);
+}
+
+#freezeTitle {
+    -fx-text-fill: rgb(223, 154, 0);
+    -fx-font-size: 28;
+    -fx-font-weight: 700;
+    -fx-font-family: 'Orgovan';
+}
+
+#freezeTimer {
+    -fx-text-fill: rgb(202, 202, 202);
+    -fx-font-size: 42;
+}
+
+#freezeDesc {
+    -fx-text-fill: rgb(230, 230, 230);
+    -fx-font-size: 18;
+    -fx-font-weight: 500;
+}

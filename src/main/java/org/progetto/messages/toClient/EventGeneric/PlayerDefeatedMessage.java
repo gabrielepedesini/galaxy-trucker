@@ -1,0 +1,28 @@
+package org.progetto.messages.toClient.EventGeneric;
+
+import java.io.Serializable;
+
+public class PlayerDefeatedMessage implements Serializable {
+
+    // =======================
+    // ATTRIBUTES
+    // =======================
+
+    private final String playerName;
+
+    // =======================
+    // CONSTRUCTORS
+    // =======================
+
+    public PlayerDefeatedMessage(String playerName) {
+        this.playerName = playerName;
+    }
+
+    // =======================
+    // GETTERS
+    // =======================
+
+    public String getPlayerName() {
+        return playerName;
+    }
+}

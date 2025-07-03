@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx/23.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.progetto.client.gui.ChooseGameView"
+           fx:id="chooseGamePane">
+
+   <stylesheets>
+      <URL value="@style/style.css"/>
+   </stylesheets>
+
+   <HBox fx:id="chooseGamePaneWrapper"
+         spacing="10"
+         alignment="CENTER"
+         prefWidth="400"
+         maxWidth="1000"
+         maxHeight="600"
+         StackPane.alignment="CENTER"
+         HBox.hgrow="ALWAYS">
+
+      <VBox spacing="10"
+            fx:id="createGamePane"
+            HBox.hgrow="ALWAYS"
+            maxWidth="Infinity">
+
+         <Label styleClass="sectionTitle" text="Create Game"></Label>
+
+         <VBox fx:id="formContainer"
+               spacing="10"
+               alignment="CENTER"
+               fillWidth="true"
+               prefWidth="300"
+               HBox.hgrow="ALWAYS">
+
+            <children>
+               <TextField fx:id="usernameTextField"
+                          promptText="Name"
+                          styleClass="text-field"
+                          maxWidth="Infinity" />
+
+               <ComboBox fx:id="boxGameLevel"
+                         promptText="Level"
+                         styleClass="text-field"
+                         maxWidth="Infinity" />
+
+               <ComboBox fx:id="boxNumMaxPlayers"
+                         promptText="Max Players"
+                         styleClass="text-field"
+                         maxWidth="Infinity" />
+            </children>
+
+            <VBox.margin>
+               <Insets top="20" bottom="10"/>
+            </VBox.margin>
+         </VBox>
+
+         <Button prefWidth="150" prefHeight="35" text="Create" onAction="#createNewGame" styleClass="button"/>
+      </VBox>
+
+      <VBox fx:id="joinGamePane"
+            spacing="10"
+            HBox.hgrow="ALWAYS"
+            maxWidth="Infinity">
+
+         <Label styleClass="sectionTitle" text="Join Game"></Label>
+
+         <Region prefHeight="10"/>
+
+         <TextField fx:id="joinUsernameTextField" promptText="Name" styleClass="text-field"/>
+
+         <Region prefHeight="5"/>
+
+         <TableView fx:id="gamesTable">
+            <columns>
+               <TableColumn fx:id="gameIdCol" text="GameID" minWidth="65" maxWidth="80" styleClass="table-column"/>
+               <TableColumn fx:id="levelCol" text="Level" minWidth="60" maxWidth="60" styleClass="table-column"/>
+               <TableColumn fx:id="maxPlayersCol" text="Max Players" minWidth="90" maxWidth="95" styleClass="table-column"/>
+               <TableColumn fx:id="playersCol" text="Players" minWidth="90" styleClass="table-column"/>
+               <TableColumn fx:id="joinCol" text="" minWidth="70" maxWidth="70" styleClass="table-column"/>
+            </columns>
+         </TableView>
+      </VBox>
+   </HBox>
+</StackPane>

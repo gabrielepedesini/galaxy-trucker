@@ -1,0 +1,376 @@
+package org.progetto.server.model.events;
+
+import javafx.util.Pair;
+import org.progetto.server.model.Board;
+import org.progetto.server.model.Game;
+import org.progetto.server.model.Player;
+import org.progetto.server.model.Spaceship;
+import org.progetto.server.model.components.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Battlezone extends EventCard {
+
+    // =======================
+    // ATTRIBUTES
+    // =======================
+
+    private final ArrayList<ConditionPenalty> couples;
+
+    // =======================
+    // CONSTRUCTORS
+    // =======================
+
+    public Battlezone(CardType type, int level, String imgSrc, ArrayList<ConditionPenalty> couples) {
+        super(type, level, imgSrc);
+        this.couples = couples;
+    }
+
+    // =======================
+    // GETTERS
+    // =======================
+
+    public ArrayList<ConditionPenalty> getCouples() {
+        return couples;
+    }
+
+    // =======================
+    // OTHER METHODS
+    // =======================
+
+    /**
+     * Finds the player with the fewer amount of crew members
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param players Game's players array
+     * @return the player with the fewer amount of crew members
+     */
+    public Player lessPopulatedSpaceship(ArrayList<Player> players) {
+        int minCrewCount = Integer.MAX_VALUE;
+        Player minPlayer = null;
+
+        for (Player player : players) {
+            // Calculates the current player crew count
+            int currCrewCount = player.getSpaceship().getTotalCrewCount();
+
+            if (currCrewCount < minCrewCount) {
+                minCrewCount = currCrewCount;
+                minPlayer = player;
+            }
+            else if (currCrewCount == minCrewCount) {
+                // In case of tie, picks farthest player on the route
+                if (player.getPosition() > minPlayer.getPosition()) {
+                    minPlayer = player;
+                }
+            }
+        }
+        return minPlayer;
+    }
+
+    /**
+     * The player moves back by a number of days equal to penaltyDays
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param board Game board
+     * @param player Current player
+     * @param penaltyDays Number of days that the player have to lose
+     */
+    public void penaltyDays(Board board, Player player, int penaltyDays) {
+        board.movePlayerByDistance(player, penaltyDays);
+    }
+
+    /**
+     * Checks if the StorageComponent chosen by player is a housing unit
+     * If that is true, the crew member will be removed
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param component StorageComponent from which the crew will be discarded
+     */
+    public void chooseDiscardedCrew(Spaceship spaceship, HousingUnit component) throws IllegalStateException {
+        if (component.getHasOrangeAlien()) {  // if it contains an orange alien
+            spaceship.setAlienOrange(false);
+            component.setAlienOrange(false);
+            if (spaceship.getIncreasedEnginePowerByAlien()) {
+                spaceship.setIncreasedEnginePowerByAlien(false);
+                spaceship.addNormalEnginePower(-2);
+            }
+        }
+        else if (component.getHasPurpleAlien()) {  // if it contains a purple alien
+            spaceship.setAlienPurple(false);
+            component.setAlienPurple(false);
+            if (spaceship.getIncreasedShootingPowerByAlien()) {
+                spaceship.setIncreasedShootingPowerByAlien(false);
+                spaceship.addNormalShootingPower(-2);
+            }
+        }
+
+        component.decrementCrewCount(spaceship, 1);
+    }
+
+    /**
+     * Discards a number of crew members from the spaceship, randomly choosing a housing unit
+     *
+     * @author Alessandro
+     * @param spaceship Spaceship from which the crew members will be discarded
+     * @param crewMembersToDiscard Number of crew members to discard
+     */
+    public void randomDiscardCrew(Spaceship spaceship, int crewMembersToDiscard) {
+        Component[][] spaceshipMatrix = spaceship.getBuildingBoard().getSpaceshipMatrixCopy();
+
+        for (int row = 0; row < spaceshipMatrix.length; row++) {
+            for (int col = 0; col < spaceshipMatrix[row].length; col++) {
+
+                Component component = spaceshipMatrix[row][col];
+
+                if(component instanceof HousingUnit housingUnit){
+
+                    while(crewMembersToDiscard != 0 && housingUnit.getCrewCount() > 0){
+                        chooseDiscardedCrew(spaceship, housingUnit);
+                        crewMembersToDiscard--;
+                    }
+
+                    if(crewMembersToDiscard == 0 || spaceship.getCrewCount() == 0)
+                        return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if there's at least a shield protecting the shot's origin direction
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param player Current player
+     * @param shot Current shot
+     * @return true if there is at least a shield protecting the shot's origin direction, otherwise false
+     */
+    public boolean checkShields(Player player, Projectile shot) {
+        Spaceship spaceship = player.getSpaceship();
+
+        return spaceship.getIdxShieldCount(shot.getFrom()) > 0;
+    }
+
+    /**
+     * If the shot find a component in its trajectory, the function returns it
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param game Current game
+     * @param player Current player
+     * @param shot Current shot
+     * @param position Dices result
+     * @return the component to destroy, null otherwise
+     */
+    public Component penaltyShot(Game game, Player player, Projectile shot, int position) {
+        Component[][] spaceshipMatrix = player.getSpaceship().getBuildingBoard().getSpaceshipMatrixCopy();
+        int row, column;
+
+        switch (shot.getFrom()) {
+            case 0:  // shot come from up
+                row = 0;
+                column = position - 6 + game.getLevel(); // normalization for spaceshipMatrix
+                if (column < 0 || column >= spaceshipMatrix[0].length) {
+                    return null;
+                }
+                for (int i = row; i < spaceshipMatrix.length; i++) {
+                    if (spaceshipMatrix[i][column] != null) {
+                        return spaceshipMatrix[i][column];
+                    }
+                }
+                break;
+            case 1:  // shot come from right
+                row = position - 5; // normalization for spaceshipMatrix
+                column = spaceshipMatrix[0].length - 1;
+                if (row < 0 || row >= spaceshipMatrix.length) {
+                    return null;
+                }
+                for (int j = column; j >= 0; j--) {
+                    if (spaceshipMatrix[row][j] != null) {
+                        return spaceshipMatrix[row][j];
+                    }
+                }
+                break;
+            case 2:  // shot come from down
+                row = spaceshipMatrix.length - 1;
+                column = position - 6 + game.getLevel(); // normalization for spaceshipMatrix
+                if (column < 0 || column >= spaceshipMatrix[0].length) {
+                    return null;
+                }
+                for (int i = row; i >= 0; i--) {
+                    if (spaceshipMatrix[i][column] != null) {
+                        return spaceshipMatrix[i][column];
+                    }
+                }
+                break;
+            case 3:  // shot come from left
+                row = position - 5; // normalization for spaceshipMatrix
+                column = 0;
+                if (row < 0 || row >= spaceshipMatrix.length) {
+                    return null;
+                }
+                for (int j = column; j < spaceshipMatrix[0].length; j++) {
+                    if (spaceshipMatrix[row][j] != null) {
+                        return spaceshipMatrix[row][j];
+                    }
+                }
+                break;
+        }
+        return null;
+    }
+
+    /**
+     * Checks that box chosen to be discarded by player is the most premium one possessed by him
+     * If that is true, the box will be removed
+     *
+     * @author Gabriele
+     * @author Stefano
+     * @param spaceship the spaceship of the current player
+     * @param component BoxStorageComponent from which the box will be discarded
+     * @param boxIdx Index in the storage where the box is placed
+     * @return true if the box was successfully discarded, false if the box chosen isn't the most premium possessed by player
+     */
+    public boolean chooseDiscardedBox(Spaceship spaceship, BoxStorage component, int boxIdx) {
+        Box[] componentsBoxes = component.getBoxes();
+
+        if(boxIdx >= component.getCapacity())
+            return false;
+
+        Box box = componentsBoxes[boxIdx];
+
+        if(box == null)
+            return false;
+
+        int[] playerBoxes = spaceship.getBoxCounts();
+
+        if (playerBoxes[0] > 0) {  // if he has at least a red box
+            if (box == Box.RED) {
+                component.removeBox(spaceship, boxIdx);
+                return true;
+            } else return false;
+        }
+
+        if (playerBoxes[1] > 0) {  // if he has at least a yellow box
+            if (box == Box.YELLOW) {
+                component.removeBox(spaceship, boxIdx);
+                return true;
+            } else return false;
+        }
+
+        if (playerBoxes[2] > 0) {  // if he has at least a green box
+            if (box == Box.GREEN) {
+                component.removeBox(spaceship, boxIdx);
+                return true;
+            } else return false;
+        }
+
+        if (playerBoxes[3] > 0) {  // if he has at least a blue box
+            if (box == Box.BLUE) {
+                component.removeBox(spaceship, boxIdx);
+                return true;
+            } else return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Discards a number of box members from the spaceship, randomly choosing a box storage
+     *
+     * @author Gabriele
+     * @param spaceship Spaceship from which the box will be discarded
+     * @param boxToDiscard Number of box members to discard
+     */
+    public void randomDiscardBoxes(Spaceship spaceship, int boxToDiscard) {
+        Component[][] spaceshipMatrix = spaceship.getBuildingBoard().getSpaceshipMatrixCopy();
+
+        if (spaceship.getBoxesCount() == 0) {
+            randomDiscardBatteries(spaceship, boxToDiscard);
+            return;
+        }
+
+        // Map from box color to list of its locations
+        Map<Box, ArrayList<Pair>> boxMap = new HashMap<>();
+
+        boxMap.put(Box.RED, new ArrayList<>());
+        boxMap.put(Box.YELLOW, new ArrayList<>());
+        boxMap.put(Box.GREEN, new ArrayList<>());
+        boxMap.put(Box.BLUE, new ArrayList<>());
+
+        // Collects box locations
+        for (int row = 0; row < spaceshipMatrix.length; row++) {
+            for (int col = 0; col < spaceshipMatrix[row].length; col++) {
+                Component component = spaceshipMatrix[row][col];
+
+                if (component instanceof BoxStorage boxStorage) {
+                    Box[] boxes = boxStorage.getBoxes();
+
+                    for (int i = 0; i < boxes.length; i++) {
+                        Box box = boxes[i];
+                        if (box != null) {
+                            boxMap.get(box).add(new Pair(boxStorage, i));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Prioritized discard
+        ArrayList<Box> priority = new ArrayList<>();
+        priority.add(Box.RED);
+        priority.add(Box.YELLOW);
+        priority.add(Box.GREEN);
+        priority.add(Box.BLUE);
+
+        // Discard boxes
+        for (Box color : priority) {
+            ArrayList<Pair> locations = boxMap.get(color);
+
+            for (Pair location : locations) {
+                if (boxToDiscard == 0) return;
+
+                if (spaceship.getBoxesCount() == 0) {
+                    randomDiscardBatteries(spaceship, boxToDiscard);
+                    return;
+                }
+
+                if (chooseDiscardedBox(spaceship, (BoxStorage) location.getKey(), (int) location.getValue()))
+                    boxToDiscard--;
+            }
+        }
+    }
+
+    /**
+     * Discards a number of batteries from the spaceship, randomly choosing a battery storage
+     *
+     * @author Gabriele
+     * @param spaceship Spaceship from which the batteries will be discarded
+     * @param batteriesToDiscard Number of batteries to discard
+     */
+    public void randomDiscardBatteries(Spaceship spaceship, int batteriesToDiscard) {
+        Component[][] spaceshipMatrix = spaceship.getBuildingBoard().getSpaceshipMatrixCopy();
+
+        for (int row = 0; row < spaceshipMatrix.length; row++) {
+            for (int col = 0; col < spaceshipMatrix[row].length; col++) {
+
+                Component component = spaceshipMatrix[row][col];
+
+                if (component instanceof BatteryStorage batteryStorage) {
+
+                    while (batteriesToDiscard != 0 && batteryStorage.getItemsCount() > 0) {
+                        batteryStorage.decrementItemsCount(spaceship, 1);
+                        batteriesToDiscard--;
+                    }
+
+                    if (batteriesToDiscard == 0 || spaceship.getBatteriesCount() == 0)
+                        return;
+                }
+            }
+        }
+    }
+}

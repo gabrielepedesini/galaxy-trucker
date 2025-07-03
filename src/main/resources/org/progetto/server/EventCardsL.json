@@ -1,0 +1,78 @@
+[
+  {
+    "type": "LOSTSTATION",
+    "level": 0,
+    "imgSrc": "card2-lv1.jpg",
+    "requiredCrew": 5,
+    "rewardBoxes": ["YELLOW", "GREEN"],
+    "penaltyDays": -1
+  },
+  {
+    "type": "LOSTSHIP",
+    "level": 0,
+    "imgSrc": "card3-lv1.jpg",
+    "penaltyCrew": 3,
+    "rewardCredits": 4,
+    "penaltyDays": -1
+  },
+  {
+    "type": "BATTLEZONE",
+    "level": 0,
+    "imgSrc": "card5-lv1.jpg",
+    "couples": [
+      {
+        "type": "CREWREQUIREMENT",
+        "penalty": {"type": "PENALTYDAYS", "neededAmount": -3, "shots": []}
+      },
+      {
+        "type": "ENGINEPOWERREQUIREMENT",
+        "penalty": {"type": "PENALTYCREW", "neededAmount": 2, "shots": []}
+      },
+      {
+        "type": "FIREPOWERREQUIREMENT",
+        "penalty": {"type": "PENALTYSHOTS", "neededAmount": 0, "shots": [{"size": "SMALL", "from": 2}, {"size": "BIG", "from": 2}]}
+      }
+    ]
+  },
+  {
+    "type": "PLANETS",
+    "level": 0,
+    "imgSrc": "card8-lv1.jpg",
+    "penaltyDays": -2,
+    "rewardsForPlanets": [
+      ["RED", "RED"],
+      ["RED", "BLUE", "BLUE"],
+      ["YELLOW"]
+    ]
+  },
+  {
+    "type": "METEORSRAIN",
+    "level": 0,
+    "imgSrc": "card12-lv1.jpg",
+    "meteors": [
+      {"size": "BIG", "from": 0},
+      {"size": "SMALL", "from": 3},
+      {"size": "SMALL", "from": 1}
+    ]
+  },
+  {
+    "type": "OPENSPACE",
+    "level": 0,
+    "imgSrc": "card16-lv1.jpg"
+  },
+  {
+    "type": "STARDUST",
+    "level": 0,
+    "imgSrc": "card17-lv1.jpg"
+  },
+  {
+    "type": "SMUGGLERS",
+    "level": 0,
+    "imgSrc": "card19-lv1.jpg",
+    "firePowerRequired": 4,
+    "penaltyBoxes": 2,
+    "penaltyDays": -1,
+    "rewardBoxes":
+      ["YELLOW", "GREEN", "BLUE"]
+  }
+]

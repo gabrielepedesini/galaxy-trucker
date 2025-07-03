@@ -1,0 +1,58 @@
+module org.progetto{
+    requires javafx.controls;
+    requires javafx.fxml;
+    requires javafx.graphics;
+    requires javafx.base;
+    requires com.fasterxml.jackson.databind;
+    requires com.google.gson;
+    requires java.rmi;
+    requires java.logging;
+
+    opens org.progetto.client to com.google.gson, javafx.fxml;
+    opens org.progetto.server.model to com.google.gson, javafx.fxml;
+    opens org.progetto.server.controller to com.google.gson, javafx.fxml;
+    opens org.progetto.server.model.components to com.google.gson, javafx.fxml;
+    opens org.progetto.server.model.events to com.google.gson, javafx.fxml;
+    opens org.progetto.server.connection.socket to com.google.gson, javafx.fxml;
+    opens org.progetto.client.connection.socket to com.google.gson, javafx.fxml;
+    opens org.progetto.client.connection.rmi to java.rmi;
+    opens org.progetto.server to com.google.gson, javafx.fxml;
+    opens org.progetto.client.gui to com.google.gson, javafx.fxml;
+    opens org.progetto.server.connection to com.google.gson, javafx.fxml;
+    opens org.progetto.server.connection.games to com.google.gson, javafx.fxml;
+    opens org.progetto.client.model to com.google.gson, javafx.fxml;
+    opens org.progetto.client.tui to com.google.gson, javafx.fxml;
+    opens org.progetto.server.controller.events to com.google.gson, javafx.fxml;
+
+    exports org.progetto.client;
+    exports org.progetto.client.connection.rmi;
+    exports org.progetto.server.model;
+    exports org.progetto.server.controller;
+    exports org.progetto.server.model.components;
+    exports org.progetto.server.model.events;
+    exports org.progetto.server.model.loading to com.fasterxml.jackson.databind;
+    exports org.progetto.server.connection.socket;
+    exports org.progetto.server.connection.rmi;
+    exports org.progetto.messages.toClient;
+    exports org.progetto.client.gui;
+    exports org.progetto.server.connection;
+    exports org.progetto.server.connection.games;
+    exports org.progetto.client.model;
+    exports org.progetto.messages.toClient.LostStation;
+    exports org.progetto.messages.toClient.EventGeneric;
+    exports org.progetto.messages.toClient.Building;
+    exports org.progetto.client.tui;
+    exports org.progetto.client.connection;
+    exports org.progetto.server;
+    exports org.progetto.messages.toClient.OpenSpace;
+    exports org.progetto.messages.toClient.Smugglers;
+    exports org.progetto.server.controller.events;
+    exports org.progetto.messages.toClient.Populating;
+    opens org.progetto.messages.toClient to com.google.gson, javafx.fxml;
+    exports org.progetto.messages.toClient.Positioning;
+    exports org.progetto.messages.toClient.Travel;
+    exports org.progetto.messages.toClient.Track;
+    opens org.progetto.messages.toClient.Track to com.google.gson, javafx.fxml;
+    exports org.progetto.messages.toClient.Spaceship;
+    opens org.progetto.messages.toClient.Spaceship to com.google.gson, javafx.fxml;
+}

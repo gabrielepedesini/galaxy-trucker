@@ -1,0 +1,360 @@
+package org.progetto.client.connection.socket;
+
+import javafx.application.Platform;
+import org.progetto.client.connection.Sender;
+import org.progetto.client.connection.ClientDisconnectionDetection;
+import org.progetto.client.gui.PageController;
+import org.progetto.client.model.GameData;
+import org.progetto.messages.toServer.*;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+public class SocketClient implements Sender {
+
+    // =======================
+    // ATTRIBUTES
+    // =======================
+
+    private Socket socket;
+
+    public SocketClient() {
+        socket = null;
+    }
+
+    // =======================
+    // OTHER METHODS
+    // =======================
+
+    /**
+     * Method to connect to the socket server
+     *
+     * @author Alessandro
+     * @param serverIp the IP address of the server
+     * @param serverPort the port number of the server
+     */
+    @Override
+    public void connect(String serverIp, int serverPort) throws IOException {
+        // If the port is not available for socket connection
+        if (!isSocketServerReachable(serverIp, serverPort))
+            throw new IOException();
+
+        socket = new Socket(serverIp, serverPort);
+
+        ClientDisconnectionDetection.startWatchdog(this);
+
+        System.out.println("Connected to the socketServer!");
+
+        new SocketWriter(new ObjectOutputStream(socket.getOutputStream())).start();
+        new SocketListener(new ObjectInputStream(socket.getInputStream())).start();
+    }
+
+    /**
+     * Check if the port is open for a socket communication
+     *
+     * @author Alessandro
+     * @param serverIp the IP address of the server
+     * @param serverPort the port number of the server
+     */
+    public boolean isSocketServerReachable(String serverIp, int serverPort) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(serverIp, serverPort), 200);
+            socket.setSoTimeout(200);
+
+            int testByte = socket.getInputStream().read();
+
+            return testByte != -1;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void sendPong(){
+        SocketWriter.sendMessage("Pong");
+    }
+
+    @Override
+    public void updateGameList() {
+        SocketWriter.sendMessage("UpdateGameList");
+    }
+
+    @Override
+    public void createGame(int levelGame, int numMaxPlayers) {
+        SocketWriter.sendMessage(new CreateGameMessage(levelGame, numMaxPlayers, GameData.getNamePlayer()));
+    }
+
+    @Override
+    public void tryJoinToGame(int idGame){
+        SocketWriter.sendMessage(new JoinGameMessage(idGame, GameData.getNamePlayer()));
+    }
+
+    @Override
+    public void reconnectToGame(){
+        SocketWriter.sendMessage(new ReconnectMessage(GameData.getIdGame(), GameData.getNamePlayer()));
+    }
+
+    @Override
+    public void showHandComponent() {
+        SocketWriter.sendMessage("ShowHandComponent");
+    }
+
+    @Override
+    public void buildShip(int idShip){
+        SocketWriter.sendMessage(new BuildSpaceshipMessage(idShip));
+    }
+
+    @Override
+    public void pickHiddenComponent(){
+        SocketWriter.sendMessage("PickHiddenComponent");
+    }
+
+    @Override
+    public void showVisibleComponents(){
+        SocketWriter.sendMessage("ShowVisibleComponents");
+    }
+
+    @Override
+    public void pickVisibleComponent(int idx){
+        SocketWriter.sendMessage(new PickVisibleComponentMessage(idx));
+    }
+
+    @Override
+    public void placeComponent(int xHandComponent, int yHandComponent, int rHandComponent) {
+        SocketWriter.sendMessage(new PlaceComponentMessage(xHandComponent, yHandComponent, rHandComponent));
+    }
+
+    @Override
+    public void placeLastComponent(int xHandComponent, int yHandComponent, int rHandComponent) {
+        SocketWriter.sendMessage(new PlaceLastComponentMessage(xHandComponent, yHandComponent, rHandComponent));
+    }
+
+    @Override
+    public void placeHandComponentAndPickHiddenComponent(int xHandComponent, int yHandComponent, int rHandComponent) {
+        SocketWriter.sendMessage(new PlaceHandComponentAndPickHiddenComponentMessage(xHandComponent, yHandComponent, rHandComponent));
+    }
+
+    @Override
+    public void placeHandComponentAndPickVisibleComponent(int xHandComponent, int yHandComponent, int rHandComponent, int componentIdx) {
+        SocketWriter.sendMessage(new PlaceHandComponentAndPickVisibleComponentMessage(xHandComponent, yHandComponent, rHandComponent, componentIdx));
+    }
+
+    @Override
+    public void placeHandComponentAndPickUpEventCardDeck(int xHandComponent, int yHandComponent, int rHandComponent, int idxDeck) {
+        SocketWriter.sendMessage(new PlaceHandComponentAndPickUpEventCardDeckMessage(xHandComponent, yHandComponent, rHandComponent, idxDeck));
+    }
+
+    @Override
+    public void placeHandComponentAndPickBookedComponent(int xHandComponent, int yHandComponent, int rHandComponent, int idx) {
+        SocketWriter.sendMessage(new PlaceHandComponentAndPickBookedComponentMessage(xHandComponent, yHandComponent, rHandComponent, idx));
+    }
+
+    @Override
+    public void placeHandComponentAndReady(int xHandComponent, int yHandComponent, int rHandComponent) {
+        SocketWriter.sendMessage(new PlaceHandComponentAndReadyMessage(xHandComponent, yHandComponent, rHandComponent));
+    }
+
+    @Override
+    public void discardComponent(){
+        SocketWriter.sendMessage("DiscardComponent");
+    }
+
+    @Override
+    public void pickUpEventCardDeck(int idxDeck){
+        SocketWriter.sendMessage(new PickUpEventCardDeckMessage(idxDeck));
+    }
+
+    @Override
+    public void putDownEventCardDeck(){
+        SocketWriter.sendMessage("PutDownEventCardDeck");
+    }
+
+    @Override
+    public void destroyComponent(int xComponent, int yComponent) {
+        SocketWriter.sendMessage(new DestroyComponentMessage(xComponent, yComponent));
+    }
+
+    @Override
+    public void bookComponent(int idx){
+        SocketWriter.sendMessage(new BookComponentMessage(idx));
+    }
+
+    @Override
+    public void showBookedComponents(){
+        SocketWriter.sendMessage("ShowBookedComponents");
+    }
+
+    @Override
+    public void pickBookedComponent(int idx){
+        SocketWriter.sendMessage(new PickBookedComponentMessage(idx));
+    }
+
+    @Override
+    public void readyPlayer() {
+        SocketWriter.sendMessage("Ready");
+    }
+
+    @Override
+    public void resetTimer(){
+        SocketWriter.sendMessage("ResetTimer");
+    }
+
+    @Override
+    public void playerStats(){
+        SocketWriter.sendMessage("PlayerStats");
+    }
+
+    @Override
+    public void showPlayers(){
+        SocketWriter.sendMessage("ShowPlayers");
+    }
+
+    @Override
+    public void showStartingPositions() {
+        SocketWriter.sendMessage("ShowStartingPositions");
+    }
+
+    @Override
+    public void showPlayersInPositioningDecisionOrder() {
+        SocketWriter.sendMessage("ShowPlayersInPositioningDecisionOrder");
+    }
+
+    @Override
+    public void showSpaceship(String owner){
+        SocketWriter.sendMessage(new RequestSpaceshipMessage(owner));
+    }
+
+    @Override
+    public void spaceshipStats() {
+        SocketWriter.sendMessage("SpaceshipStats");
+    }
+
+    @Override
+    public void showTrack() {
+        SocketWriter.sendMessage("ShowTrack");
+    }
+
+    @Override
+    public void responsePlaceAlien(int x, int y, String color) {
+        SocketWriter.sendMessage(new ResponsePlaceAlienMessage(x, y, color));
+    }
+
+    @Override
+    public void responseStartingPosition(int startingPosition) {
+        SocketWriter.sendMessage(new ResponseStartingPositionMessage(startingPosition));
+    }
+
+    @Override
+    public void responseHowManyDoubleCannons(int howManyWantToUse) {
+        SocketWriter.sendMessage(new ResponseHowManyDoubleCannonsMessage(howManyWantToUse));
+    }
+
+    @Override
+    public void responseHowManyDoubleEngines(int howManyWantToUse) {
+        SocketWriter.sendMessage(new ResponseHowManyDoubleEnginesMessage(howManyWantToUse));
+    }
+
+    @Override
+    public void responseBatteryToDiscard(int xBatteryStorage, int yBatteryStorage) {
+        SocketWriter.sendMessage(new ResponseBatteryToDiscardMessage(xBatteryStorage, yBatteryStorage));
+    }
+
+    @Override
+    public void responseCrewToDiscard(int xHousingUnit, int yHousingUnit) {
+        SocketWriter.sendMessage(new ResponseCrewToDiscardMessage(xHousingUnit, yHousingUnit));
+    }
+
+    @Override
+    public void responseBoxToDiscard(int xBoxStorage, int yBoxStorage, int idx) {
+        SocketWriter.sendMessage(new ResponseBoxToDiscardMessage(xBoxStorage, yBoxStorage, idx));
+    }
+
+    @Override
+    public void responseChooseToUseShield(String response) {
+        SocketWriter.sendMessage(new ResponseChooseToUseShieldMessage(response));
+    }
+
+    @Override
+    public void responseAcceptRewardCreditsAndPenalties(String response) {
+        SocketWriter.sendMessage(new ResponseAcceptRewardCreditsAndPenaltiesMessage(response));
+    }
+
+    @Override
+    public void responseLandRequest(String response) {
+        SocketWriter.sendMessage(new ResponseLandRequestMessage(response));
+    }
+
+    @Override
+    public void responseAcceptRewardCreditsAndPenaltyDays(String response) {
+        SocketWriter.sendMessage(new ResponseAcceptRewardCreditsAndPenaltyDaysMessage(response));
+    }
+
+    @Override
+    public void responseAcceptRewardBoxesAndPenaltyDays(String response) {
+        SocketWriter.sendMessage(new ResponseAcceptRewardBoxesAndPenaltyDaysMessage(response));
+    }
+
+    @Override
+    public void responsePlanetLandRequest(int idx) {
+        SocketWriter.sendMessage(new ResponsePlanetLandRequestMessage(idx));
+    }
+
+    @Override
+    public void responseRewardBox(int idxBox, int xBoxStorage, int yBoxStorage, int idx) {
+        SocketWriter.sendMessage(new ResponseRewardBoxMessage(idxBox, xBoxStorage, yBoxStorage, idx));
+    }
+
+    @Override
+    public void moveBox(int xStart, int yStart, int idxStart, int xDestination, int yDestination, int idxDestination) {
+        SocketWriter.sendMessage(new MoveBoxMessage(xStart, yStart, idxStart, xDestination, yDestination, idxDestination));
+    }
+
+    @Override
+    public void removeBox(int xBoxStorage, int yBoxStorage, int idx) {
+        SocketWriter.sendMessage(new RemoveBoxMessage(xBoxStorage, yBoxStorage, idx));
+    }
+
+    @Override
+    public void responseUseDoubleCannonRequest(String response) {
+        SocketWriter.sendMessage(new ResponseUseDoubleCannonRequestMessage(response));
+    }
+
+    @Override
+    public void responseContinueTravel(String response) {
+        SocketWriter.sendMessage(new ResponseContinueTravelMessage(response));
+    }
+
+    @Override
+    public void responseRollDice() {
+        SocketWriter.sendMessage("RollDice");
+    }
+
+    @Override
+    public void responseSelectSpaceshipPart(int x, int y) {
+        SocketWriter.sendMessage(new ResponseSelectSpaceshipPartMessage(x, y));
+    }
+
+    @Override
+    public void leaveGame() {
+        SocketWriter.sendMessage("LeaveGame");
+    }
+
+    @Override
+    public void disconnected() {
+        socket = null;
+
+        System.out.println("You have disconnected!");
+
+        if(GameData.getUIType().equals("GUI")) {
+            Platform.runLater(() -> {
+                try {
+                    PageController.switchScene("connection.fxml");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            System.exit(0);
+        }
+    }
+}
